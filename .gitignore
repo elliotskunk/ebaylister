@@ -1,0 +1,29 @@
+﻿# ---- Secrets ----
+.env
+*.env
+.env.*
+*secret*
+*.key
+*.pem
+*.crt
+
+# ---- Python / Flask ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+.venv/
+venv/
+ENV/
+dist/
+build/
+pip-wheel-metadata/
+instance/
+*.sqlite3
+
+# ---- OS / IDE ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>eBay Listing Result</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; }
+    pre { white-space: pre-wrap; background:#f6f6f6; padding:12px; border-radius:8px; }
+    ul { padding-left: 18px; }
+  </style>
+</head>
+<body>
+  <h1>{{ title }}</h1>
+
+  <p><strong>Price:</strong> {{ price }} GBP</p>
+
+  <h3>Description</h3>
+  <pre>{{ description }}</pre>
+
+  <h3>Item specifics</h3>
+  <ul>
+    {% for k, v in specifics.items() %}
+      <li><b>{{ k }}:</b> {{ ", ".join(v) }}</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Trading API raw response</h3>
+  <pre>{{ response_xml }}</pre>
+</body>
+</html>

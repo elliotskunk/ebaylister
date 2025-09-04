@@ -1,0 +1,63 @@
+import requests
+
+EBAY_API_URL = "https://api.ebay.com/ws/api.dll"
+ACCESS_TOKEN = "<ACCESS_TOKEN>"  # refresh this before running
+
+HEADERS = {
+    "X-EBAY-API-CALL-NAME": "AddFixedPriceItem",
+    "X-EBAY-API-SITEID": "3",   # 3 = UK
+    "X-EBAY-API-COMPATIBILITY-LEVEL": "1147",
+    "X-EBAY-API-IAF-TOKEN": ACCESS_TOKEN,
+    "Content-Type": "text/xml"
+}
+
+def add_fixed_price_item(title, description, category_id, price,
+                         payment_policy_id, return_policy_id, fulfillment_policy_id):
+    xml_payload = f"""<?xml version="1.0" encoding="utf-8"?>
+    <AddFixedPriceItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+      <RequesterCredentials>
+        <eBayAuthToken>{ACCESS_TOKEN}</eBayAuthToken>
+      </RequesterCredentials>
+      <ErrorLanguage>en_GB</ErrorLanguage>
+      <WarningLevel>High</WarningLevel>
+      <Item>
+        <Title>{title}</Title>
+        <Description>{description}</Description>
+        <PrimaryCategory>
+          <CategoryID>{category_id}</CategoryID>
+        </PrimaryCategory>
+        <StartPrice>{price}</StartPrice>
+        <CategoryMappingAllowed>true</CategoryMappingAllowed>
+        <Country>GB</Country>
+        <Currency>GBP</Currency>
+        <DispatchTimeMax>3</DispatchTimeMax>
+        <ListingDuration>GTC</ListingDuration>
+        <ListingType>FixedPriceItem</ListingType>
+        <PaymentPolicy>
+          <PaymentPolicyID>{payment_policy_id}</PaymentPolicyID>
+        </PaymentPolicy>
+        <ReturnPolicy>
+          <ReturnPolicyID>{return_policy_id}</ReturnPolicyID>
+        </ReturnPolicy>
+        <FulfillmentPolicy>
+          <FulfillmentPolicyID>{fulfillment_policy_id}</FulfillmentPolicyID>
+        </FulfillmentPolicy>
+        <Quantity>1</Quantity>
+        <ConditionID>3000</ConditionID>
+      </Item>
+    </AddFixedPriceItemRequest>"""
+
+    r = requests.post(EBAY_API_URL, headers=HEADERS, data=xml_payload)
+    return r.text
+
+if __name__ == "__main__":
+    resp = add_fixed_price_item(
+        title="Test Listing via Trading API",
+        description="Fallback listing created without Inventory API",
+        category_id="9355",  # Mobile Phones
+        price="19.99",
+        payment_policy_id="<PAYMENT_POLICY_ID>",
+        return_policy_id="<RETURN_POLICY_ID>",
+        fulfillment_policy_id="<FULFILLMENT_POLICY_ID>"
+    )
+    print(resp)
