@@ -1,0 +1,19 @@
+
+
+
+# Force TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$clientId     = "TobiasKu-ellioton-PRD-cd444012e-0af8aae4"   # Production App ID
+$clientSecret = "PRD-d444012e2c12-9c50-4384-86c4-37d0"       # Production Cert ID
+
+$basicAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+$Headers = @{
+  "Authorization" = "Basic $basicAuth"
+  "Content-Type"  = "application/x-www-form-urlencoded"
+}
+
+# Swap in your fresh ?code=… value here
+$Body = "grant_type=authorization_code&code=v%5E1.1%23i%5E1%23r%5E1%23f%5E0%23p%5E3%23I%5E3%23t%5EUl41XzM6RDg0NUE2QzMzQjI0RDQ2NDYzQkRFMEUyMTVGRTkzODJfMV8xI0VeMjYw&redirect_uri=Tobias_Kunz-TobiasKu-elliot-ppcxhca"
+
+Invoke-RestMethod -Uri https://api.ebay.com/identity/v1/oauth2/token -Method Post -Headers $Headers -Body $Body

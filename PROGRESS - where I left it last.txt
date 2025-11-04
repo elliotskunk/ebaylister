@@ -1,0 +1,24 @@
+Okay check chatgpt for the last message sent. It details the problems with the code I put last. I have all the keys sorted, it just needs the code finishing. it needs to get the backend sorte, try to get a draft uploaded to prove the workflow works, then try to fix it to work with the chatgpt api. 
+its a flask backend with a frontend that allows you to use it on the mobile as wella s web, its lieka a eprsiitent web ap ro soemthign. check the early chatgpt writings earlier i tehc aht before the key stuff. 
+
+
+$sku = "TESTSKU001"
+
+$Headers = @{
+  "Authorization"    = "Bearer " + $env:EBAY_ACCESS_TOKEN
+  "Content-Type"     = "application/json"
+  "Content-Language" = "en-GB"
+}
+
+$Body = @{
+  availability = @{ shipToLocationAvailability = @{ quantity = 1 } }
+  condition = "NEW"
+  product = @{
+    title = "Test Draft Item"
+    description = "Test listing via Inventory API."
+    imageUrls = @("https://ramvolt.com/ebay/wolf.jpeg")  # optional but helpful
+  }
+} | ConvertTo-Json -Depth 6
+
+Invoke-RestMethod -Uri "https://api.ebay.com/sell/inventory/v1/inventory_item/$sku" `
+                  -Method PUT -Headers $Headers -Body $Body

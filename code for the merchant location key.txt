@@ -1,0 +1,23 @@
+# assumes $env:EBAY_ACCESS_TOKEN is set to your PRODUCTION user token
+$Headers = @{
+  "Authorization"    = "Bearer " + $env:EBAY_ACCESS_TOKEN
+  "Content-Type"     = "application/json"
+  "Content-Language" = "en-GB"
+}
+
+
+$Body = @{
+  name = "Main Warehouse"
+  merchantLocationStatus = "ENABLED"
+  locationTypes = @("WAREHOUSE")
+  location = @{
+    address = @{
+      postalCode = "DE22 3UP"   # note the space
+      country    = "GB"
+    }
+  }
+} | ConvertTo-Json -Depth 6
+
+$locKey = "DERBY1"  # letters/numbers/-/_ only, no spaces
+Invoke-RestMethod -Uri "https://api.ebay.com/sell/inventory/v1/location/$locKey" `
+                  -Method POST -Headers $Headers -Body $Body

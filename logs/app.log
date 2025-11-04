@@ -1,0 +1,15 @@
+2025-09-21 00:59:26,229 INFO werkzeug :: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2025-09-21 00:59:26,229 INFO werkzeug :: [33mPress CTRL+C to quit[0m
+2025-09-21 00:59:26,231 INFO werkzeug ::  * Restarting with stat
+2025-09-21 00:59:26,752 WARNING werkzeug ::  * Debugger is active!
+2025-09-21 00:59:26,758 INFO werkzeug ::  * Debugger PIN: 118-157-670
+2025-09-21 00:59:32,250 INFO werkzeug :: 127.0.0.1 - - [21/Sep/2025 00:59:32] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-21 00:59:32,477 INFO werkzeug :: 127.0.0.1 - - [21/Sep/2025 00:59:32] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 00:59:56,151 INFO werkzeug :: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2025-09-21 00:59:56,164 INFO werkzeug :: [33mPress CTRL+C to quit[0m
+2025-09-21 00:59:56,167 INFO werkzeug ::  * Restarting with stat
+2025-09-21 00:59:56,654 WARNING werkzeug ::  * Debugger is active!
+2025-09-21 00:59:56,658 INFO werkzeug ::  * Debugger PIN: 118-157-670
+2025-09-21 01:00:02,036 INFO werkzeug :: 127.0.0.1 - - [21/Sep/2025 01:00:02] "[33mGET / HTTP/1.1[0m" 404 -
