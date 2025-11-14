@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>eBay Lister - Upload & List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e8e8ff;
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .upload-area p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .result-details {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .result-details h4 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .result-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .result-item strong {
+            color: #555;
+        }
+
+        .new-upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 eBay Lister</h1>
+            <p>Upload, analyze with AI, and create optimized listings</p>
+        </div>
+
+        <div class="card">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <h3>Upload Product Image</h3>
+                    <p>Click to browse or drag & drop</p>
+                    <p style="margin-top: 5px; font-size: 0.8em;">Max 16MB - JPG, PNG, WEBP</p>
+                </div>
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+
+                <div class="preview-container" id="previewContainer">
+                    <img id="previewImage" class="preview-image" alt="Preview">
+                    <button type="button" class="new-upload-btn" id="changeImageBtn">Change Image</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="titleOverride">Title Override (optional)</label>
+                    <input type="text" id="titleOverride" name="title_override" maxlength="80" placeholder="Leave blank to use AI-generated title">
+                    <small>AI will generate an SEO-optimized title. Override only if needed.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="priceOverride">Price Override (optional)</label>
+                    <input type="number" id="priceOverride" name="price_override" step="0.01" min="0.99" placeholder="Leave blank to use AI-suggested price">
+                    <small>AI will suggest a competitive price. Override if you prefer.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryOverride">Category ID Override (optional)</label>
+                    <input type="text" id="categoryOverride" name="category_id" placeholder="Leave blank for auto-detection">
+                    <small>AI will auto-select the best category. Provide eBay category ID if needed.</small>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🚀 Analyze & Create Draft Listing
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p id="loadingText">Analyzing image with AI...</p>
+            </div>
+
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const changeImageBtn = document.getElementById('changeImageBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
+        const result = document.getElementById('result');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                imageInput.files = files;
+                handleImageSelect();
+            }
+        });
+
+        // File selection
+        imageInput.addEventListener('change', handleImageSelect);
+
+        function handleImageSelect() {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    uploadArea.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Change image button
+        changeImageBtn.addEventListener('click', () => {
+            imageInput.value = '';
+            uploadArea.style.display = 'block';
+            previewContainer.style.display = 'none';
+        });
+
+        // Form submission
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(uploadForm);
+
+            // Show loading
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const loadingSteps = [
+                'Uploading image...',
+                'Analyzing with AI vision model...',
+                'Uploading to eBay Picture Service...',
+                'Determining best category...',
+                'Creating draft listing...'
+            ];
+
+            let stepIndex = 0;
+            const loadingInterval = setInterval(() => {
+                if (stepIndex < loadingSteps.length) {
+                    loadingText.textContent = loadingSteps[stepIndex];
+                    stepIndex++;
+                }
+            }, 2000);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(loadingInterval);
+                const data = await response.json();
+
+                loading.style.display = 'none';
+                result.style.display = 'block';
+
+                if (response.ok && data.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Success!</strong> Draft listing created on eBay!
+                        </div>
+                        <div class="result-details">
+                            <h4>Listing Details</h4>
+                            <div class="result-item"><strong>Title:</strong> ${data.title}</div>
+                            <div class="result-item"><strong>Price:</strong> £${data.price.toFixed(2)}</div>
+                            <div class="result-item"><strong>Category ID:</strong> ${data.category_id}</div>
+                            <div class="result-item"><strong>Condition:</strong> ${data.condition}</div>
+                            <div class="result-item"><strong>SKU:</strong> ${data.sku}</div>
+                            <div class="result-item"><strong>Offer ID:</strong> ${data.offer_id}</div>
+                            ${data.note ? `<div class="result-item" style="margin-top: 15px; color: #856404; background: #fff3cd; border: 1px solid #ffeeba;">ℹ️ ${data.note}</div>` : ''}
+                        </div>
+                        <button class="new-upload-btn" onclick="location.reload()">Upload Another Item</button>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Error:</strong> ${data.error || 'Unknown error occurred'}
+                        </div>
+                        <button class="new-upload-btn" onclick="location.reload()">Try Again</button>
+                    `;
+                }
+            } catch (error) {
+                clearInterval(loadingInterval);
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Network Error:</strong> ${error.message}
+                    </div>
+                    <button class="new-upload-btn" onclick="location.reload()">Try Again</button>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

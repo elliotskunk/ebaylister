@@ -40,9 +40,37 @@ def build_inventory_item_payload(
         "description": description[:40000],
         "imageUrls": image_urls,
     }
-    if brand: product["brand"] = brand
-    if mpn: product["mpn"] = mpn
-    if aspects: product["aspects"] = aspects
+
+    # Add brand if provided
+    if brand:
+        product["brand"] = brand
+    # Extract brand from aspects if available
+    elif aspects and "Brand" in aspects:
+        brand_values = aspects.get("Brand", [])
+        if brand_values:
+            product["brand"] = brand_values[0]
+
+    # Add MPN if provided
+    if mpn:
+        product["mpn"] = mpn
+
+    # Add aspects (item specifics)
+    if aspects:
+        # Filter and validate aspects
+        validated_aspects = {}
+        for key, values in aspects.items():
+            # Skip Brand if we already added it
+            if key == "Brand" and "brand" in product:
+                continue
+
+            # Ensure values is a list of strings
+            if isinstance(values, list) and values:
+                validated_aspects[key] = [str(v) for v in values if v]
+            elif values:
+                validated_aspects[key] = [str(values)]
+
+        if validated_aspects:
+            product["aspects"] = validated_aspects
 
     return {
         "sku": sku,
