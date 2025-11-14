@@ -2,12 +2,12 @@
 
 **AI-Powered eBay Listing Creator**
 
-Upload product images, let AI analyze them with GPT-4o Vision, and automatically create SEO-optimized eBay draft listings with just a few clicks!
+Upload product images, let AI analyze them with OpenAI vision models, and automatically create SEO-optimized eBay draft listings with just a few clicks!
 
 ## ✨ Features
 
 - 📸 **Image Upload** - Drag & drop or click to upload product images
-- 🤖 **AI Analysis** - GPT-4o Vision analyzes your images and extracts:
+- 🤖 **AI Analysis** - OpenAI vision models (gpt-4o-mini) analyze your images and extract:
   - SEO-optimized titles (Cassini-optimized)
   - Detailed descriptions
   - Item specifics/aspects
@@ -22,7 +22,7 @@ Upload product images, let AI analyze them with GPT-4o Vision, and automatically
 ## 🛠️ Technology Stack
 
 - **Backend**: Python 3.9+ with Flask
-- **AI**: OpenAI GPT-4o Vision
+- **AI**: OpenAI vision models (gpt-4o-mini by default, configurable)
 - **eBay API**: Inventory API v1 (modern REST API) + Trading API (for EPS)
 - **Authentication**: OAuth 2.0 with automatic token refresh
 - **Frontend**: Vanilla JavaScript with modern responsive CSS
@@ -35,7 +35,7 @@ Upload product images, let AI analyze them with GPT-4o Vision, and automatically
    - OAuth User Refresh Token
    - Business policies set up (Payment, Return, Fulfillment)
    - Merchant location configured
-3. **OpenAI API Key** (for GPT-4o Vision)
+3. **OpenAI API Key** (for vision-enabled models)
 
 ## 🚀 Quick Start
 
@@ -81,7 +81,7 @@ ebaylister/
 ├── auth.py                      # OAuth token management with auto-refresh
 ├── inventory_flow.py            # eBay Inventory API integration
 ├── ebay_picture_service.py      # EPS image upload
-├── ai_analyzer.py               # GPT-4o Vision analysis with Cassini SEO
+├── ai_analyzer.py               # OpenAI vision analysis with Cassini SEO
 ├── category_matcher.py          # Category auto-selection
 ├── categories.json              # 15,989 eBay UK categories
 ├── requirements.txt             # Python dependencies
@@ -158,7 +158,7 @@ Note: Only works when FORCE_DRAFTS=false
 
 1. **Image Upload** → User uploads product image via web interface or API
 2. **Image Processing** → Image is validated, resized if needed, and converted to JPEG
-3. **AI Analysis** → GPT-4o Vision analyzes the image and generates:
+3. **AI Analysis** → OpenAI vision model analyzes the image and generates:
    - SEO-optimized title (Cassini algorithm)
    - Detailed description
    - Item specifics (Brand, Size, Color, Material, etc.)
@@ -194,8 +194,9 @@ The AI is specifically trained to optimize for eBay's Cassini search algorithm:
 
 **1. "AI analysis failed" error**
 - Check your `OPENAI_API_KEY` is set correctly in `.env`
-- Ensure you have GPT-4o API access
+- Ensure you have access to vision-enabled models (gpt-4o-mini, gpt-4o, etc.)
 - Check OpenAI API quotas/billing
+- Verify `OPENAI_MODEL` is set to a valid vision model in `.env`
 
 **2. "EPS upload failed" error**
 - Verify eBay OAuth tokens are valid
@@ -253,7 +254,7 @@ gunicorn -w 4 -b 0.0.0.0:5001 main:app
 
 - **Draft Listings**: All listings are created as drafts by default. Review them in eBay Seller Hub before publishing.
 - **API Limits**: Be aware of eBay API rate limits (5,000 calls/day for production)
-- **OpenAI Costs**: GPT-4o Vision calls cost money. Monitor usage at platform.openai.com
+- **OpenAI Costs**: Vision API calls cost money (gpt-4o-mini is 60x cheaper than gpt-4o). Monitor usage at platform.openai.com
 - **Categories**: The `categories.json` file contains eBay UK categories. Update for other marketplaces.
 - **OAuth Tokens**: The app automatically refreshes access tokens using your refresh token
 
@@ -264,7 +265,7 @@ Private project - All rights reserved
 ## 🙏 Acknowledgments
 
 - eBay Developer Program
-- OpenAI GPT-4o Vision
+- OpenAI Vision Models (gpt-4o-mini, gpt-4o)
 - Flask Framework
 
 ---

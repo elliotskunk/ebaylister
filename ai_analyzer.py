@@ -1,6 +1,6 @@
 """
 AI Image Analysis for eBay Listings
-Uses OpenAI GPT-4o Vision to analyze product images and generate SEO-optimized listings.
+Uses OpenAI vision models (gpt-4o-mini by default) to analyze product images and generate SEO-optimized listings.
 """
 import os
 import base64
@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 # Initialize OpenAI client
 openai.api_key = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # Default to cost-effective model
 
 
 class AIAnalysisError(RuntimeError):
@@ -22,7 +23,7 @@ class AIAnalysisError(RuntimeError):
 
 def analyze_image_for_listing(image_bytes: bytes, category_hint: Optional[str] = None) -> Dict[str, Any]:
     """
-    Analyze an image using GPT-4o Vision and generate eBay listing data optimized for Cassini SEO.
+    Analyze an image using OpenAI vision models and generate eBay listing data optimized for Cassini SEO.
 
     Args:
         image_bytes: Raw image bytes
@@ -112,10 +113,10 @@ Return ONLY valid JSON with this exact structure:
             ]},
         ]
 
-        log.info("Sending image to GPT-4o Vision for analysis...")
+        log.info(f"Sending image to {OPENAI_MODEL} for analysis...")
 
         response = openai.chat.completions.create(
-            model="gpt-4o",
+            model=OPENAI_MODEL,
             messages=messages,
             temperature=0.3,  # Lower temperature for more consistent output
             max_tokens=1500,

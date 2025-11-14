@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 This installs:
 - Flask (web framework)
-- OpenAI (GPT-4o Vision)
+- OpenAI (vision models: gpt-4o-mini, gpt-4o, etc.)
 - Pillow (image processing)
 - python-dotenv (environment variables)
 - requests (HTTP client)
@@ -68,7 +68,7 @@ Default Category: 11450
 ## What Happens Next?
 
 The app will:
-1. ✅ Analyze your image with GPT-4o Vision
+1. ✅ Analyze your image with AI (gpt-4o-mini by default)
 2. ✅ Generate an SEO-optimized title
 3. ✅ Create a detailed description
 4. ✅ Extract item specifics (Brand, Size, Color, etc.)
@@ -116,6 +116,9 @@ DEFAULT_CATEGORY_ID=11450
 
 # ADD YOUR OPENAI KEY HERE!
 OPENAI_API_KEY=your_key_here
+
+# AI Model (gpt-4o-mini is cost-effective, gpt-4o for better quality)
+OPENAI_MODEL=gpt-4o-mini
 
 # Safety mode (prevents accidental publishing)
 FORCE_DRAFTS=true
