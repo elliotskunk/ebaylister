@@ -1,104 +1,274 @@
-# eBay Listing Application
+# 🚀 eBay Lister App
 
-This application allows you to upload images of clothing, have them analysed by
-OpenAI’s vision models to generate a title, description, item specifics and a
-suggested price, and then automatically create draft listings on eBay via
-their Sell Inventory API.
+**AI-Powered eBay Listing Creator**
 
-## Features
+Upload product images, let AI analyze them with GPT-4o Vision, and automatically create SEO-optimized eBay draft listings with just a few clicks!
 
-* Web‐based interface for uploading images (drag‐and‐drop supported).
-* Uses OpenAI’s `gpt-4o` model to analyse images and extract structured
-  attributes (e.g. garment type, colour, size, target gender, vibe).
-* Generates a descriptive title, detailed description and recommended price.
-* Integrates with eBay’s Inventory API to:
-  * Create or update inventory items (one per unique SKU).
-  * Create offers referencing the inventory item with correct marketplace,
-    category, pricing and policies.
-  * Publish the offer to create a draft listing ready for review and
-    activation on eBay.
+## ✨ Features
 
-## Requirements
+- 📸 **Image Upload** - Drag & drop or click to upload product images
+- 🤖 **AI Analysis** - GPT-4o Vision analyzes your images and extracts:
+  - SEO-optimized titles (Cassini-optimized)
+  - Detailed descriptions
+  - Item specifics/aspects
+  - Suggested pricing
+  - Condition assessment
+- 🏷️ **Auto-Categorization** - Automatically selects the best eBay category from 15,989 UK categories
+- 📤 **eBay Picture Service (EPS)** - Uploads images directly to eBay's servers
+- 📝 **Draft Listings** - Creates draft listings on eBay (ready to publish when you're ready)
+- 📱 **Mobile-Friendly** - Responsive design works great on phones, tablets, and desktops
+- 🔒 **Safe** - Draft-only mode prevents accidental publishing
 
-* Python 3.9+
-* An [OpenAI API key](https://platform.openai.com/account/api-keys).
-* An eBay developer account with access to the Sell Inventory API.
-* OAuth user access token with the following scopes:
-  * `https://api.ebay.com/oauth/api_scope/sell.inventory`
-  * `https://api.ebay.com/oauth/api_scope/sell.account`
-  * `https://api.ebay.com/oauth/api_scope/sell.fulfillment`
-* Active listing policies on your eBay seller account (payment, return and
-  shipping/fulfilment policies) and an inventory location.
+## 🛠️ Technology Stack
 
-## Setup
+- **Backend**: Python 3.9+ with Flask
+- **AI**: OpenAI GPT-4o Vision
+- **eBay API**: Inventory API v1 (modern REST API) + Trading API (for EPS)
+- **Authentication**: OAuth 2.0 with automatic token refresh
+- **Frontend**: Vanilla JavaScript with modern responsive CSS
 
-1. **Clone this repository or copy the folder** on your machine.
-2. Create a virtual environment and install dependencies:
+## 📋 Prerequisites
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+1. **Python 3.9+**
+2. **eBay Developer Account** with:
+   - Production API credentials (Client ID, Client Secret)
+   - OAuth User Refresh Token
+   - Business policies set up (Payment, Return, Fulfillment)
+   - Merchant location configured
+3. **OpenAI API Key** (for GPT-4o Vision)
 
-3. **Set environment variables**. Create a `.env` file in the project root
-   containing the following keys (replace the values with your own):
+## 🚀 Quick Start
 
-   ```env
-   OPENAI_API_KEY=sk-...
+### 1. Install Dependencies
 
-   # eBay API credentials and configuration
-   EBAY_ACCESS_TOKEN=<your OAuth user access token>
-   EBAY_MARKETPLACE_ID=EBAY_GB          # or EBAY_US, EBAY_DE, etc.
-   EBAY_LOCATION_KEY=<your location key> # previously created via createInventoryLocation
-   EBAY_PAYMENT_POLICY_ID=<payment policy ID>
-   EBAY_RETURN_POLICY_ID=<return policy ID>
-   EBAY_FULFILLMENT_POLICY_ID=<fulfilment (shipping) policy ID>
-   EBAY_CATEGORY_ID=<default category ID, e.g. 11450 for Clothing>
-   DEFAULT_CURRENCY=GBP
-   ```
+```bash
+pip install -r requirements.txt
+```
 
-   You can retrieve your listing policy IDs from the eBay Seller Hub or via the
-   Sell Account API.  The `EBAY_LOCATION_KEY` refers to a seller inventory
-   location created via the `createInventoryLocation` call; it defines where
-   items are shipped from.
+### 2. Configure Environment
 
-4. Run the application:
+The `.env` file is already created with your eBay credentials. **Update the OpenAI API key**:
 
-   ```bash
-   flask --app main run --debug
-   ```
+```env
+# OpenAI Configuration (UPDATE THIS!)
+OPENAI_API_KEY=your_actual_openai_api_key_here
+```
 
-5. Navigate to `http://127.0.0.1:5000` in your browser, upload a clothing
-   image and follow the instructions.  The app will display the AI‐generated
-   listing details and, if the eBay API calls succeed, will show the offer and
-   item IDs returned by eBay.
+All other eBay credentials are already configured.
 
-## Caveats and Notes
+### 3. Run the App
 
-* This application produces draft listings; it does **not** automatically
-  activate your listing on eBay.  After reviewing the generated offer
-  details, you can log in to eBay and finalise the listing before it goes
-  live.
-* eBay’s policy IDs, marketplace ID and location key must be valid for
-  your seller account.  Listing creation will fail if these identifiers
-  are incorrect.
-* Pricing suggestions are heuristic; always review and adjust the price
-  before publishing.
-* For security reasons the application does not store your eBay access
-  token.  When the server restarts you must ensure that the
-  `EBAY_ACCESS_TOKEN` environment variable is up to date.
+```bash
+python main.py
+```
 
-## File Overview
+The app will start on `http://localhost:5001`
 
-* `main.py` – Flask application defining routes and integration logic.
-* `templates/index.html` – HTML form for uploading images and displaying
-  results.
-* `requirements.txt` – Python dependencies.
-* `.env.example` – Sample environment configuration file (copy to `.env`).
+### 4. Upload and List!
 
-## Licence
+1. Open `http://localhost:5001` in your browser
+2. Upload a product image
+3. Optionally override title, price, or category
+4. Click "Analyze & Create Draft Listing"
+5. Wait for AI to analyze and create the listing
+6. Check your eBay Seller Hub for the draft listing!
 
-This project is provided as is, without warranty of any kind.  Use it at
-your own risk.  You are responsible for complying with eBay’s developer
-terms and conditions and all applicable laws.
+## 📁 Project Structure
+
+```
+ebaylister/
+├── main.py                      # Main Flask application
+├── auth.py                      # OAuth token management with auto-refresh
+├── inventory_flow.py            # eBay Inventory API integration
+├── ebay_picture_service.py      # EPS image upload
+├── ai_analyzer.py               # GPT-4o Vision analysis with Cassini SEO
+├── category_matcher.py          # Category auto-selection
+├── categories.json              # 15,989 eBay UK categories
+├── requirements.txt             # Python dependencies
+├── .env                         # Configuration (credentials)
+├── templates/
+│   └── upload.html             # Mobile-friendly upload interface
+├── logs/
+│   └── app.log                 # Application logs
+└── legacy/                     # Old Trading API implementation
+```
+
+## 🔌 API Endpoints
+
+### Web Interface
+
+- `GET /` - Upload form (mobile-friendly UI)
+- `GET /health` - Health check
+
+### API Endpoints
+
+#### Upload & Create Listing
+
+```http
+POST /upload
+Content-Type: multipart/form-data
+
+Fields:
+- image: Image file (required)
+- title_override: Override AI title (optional)
+- price_override: Override AI price (optional)
+- category_id: Override category (optional)
+
+Response: JSON with listing details and offer ID
+```
+
+#### Create Listing (Manual Data)
+
+```http
+POST /api/create
+Content-Type: application/json
+
+{
+  "title": "Item Title",
+  "description": "Description",
+  "price": 19.99,
+  "image_url": "https://ebay-eps-url",
+  "category_id": "12345",
+  "aspects": {"Brand": ["Nike"], "Size": ["L"]},
+  "sku": "CUSTOM-SKU"
+}
+```
+
+#### Analyze Only (No Listing)
+
+```http
+POST /api/analyze
+Content-Type: multipart/form-data
+
+Fields:
+- image: Image file
+
+Response: JSON with AI analysis only
+```
+
+#### Publish Offer (Disabled by Default)
+
+```http
+POST /api/publish/{offer_id}
+
+Note: Only works when FORCE_DRAFTS=false
+```
+
+## 🎯 How It Works
+
+1. **Image Upload** → User uploads product image via web interface or API
+2. **Image Processing** → Image is validated, resized if needed, and converted to JPEG
+3. **AI Analysis** → GPT-4o Vision analyzes the image and generates:
+   - SEO-optimized title (Cassini algorithm)
+   - Detailed description
+   - Item specifics (Brand, Size, Color, Material, etc.)
+   - Suggested price
+   - Condition assessment
+4. **Image Upload to EPS** → Image is uploaded to eBay Picture Service
+5. **Category Selection** → Best category is auto-selected from 15,989 categories
+6. **Inventory Item Creation** → Creates inventory item with eBay Inventory API
+7. **Offer Creation** → Creates draft offer (listing) on eBay
+8. **Done!** → Draft listing is ready in eBay Seller Hub
+
+## 🔐 Security & Safety
+
+- ✅ **Draft Mode** - `FORCE_DRAFTS=true` prevents accidental publishing
+- ✅ **OAuth 2.0** - Secure authentication with automatic token refresh
+- ✅ **Secrets Management** - All credentials in `.env` (gitignored)
+- ✅ **Input Validation** - Images and data validated before processing
+- ✅ **Error Handling** - Comprehensive error handling and logging
+
+## 📊 Cassini SEO Optimization
+
+The AI is specifically trained to optimize for eBay's Cassini search algorithm:
+
+- **Front-loaded titles** - Most important keywords first
+- **Rich item specifics** - Maximum relevant attributes
+- **Keyword-rich descriptions** - Natural language with search terms
+- **Accurate categorization** - Proper category = better visibility
+- **Condition accuracy** - Honest condition descriptions
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**1. "AI analysis failed" error**
+- Check your `OPENAI_API_KEY` is set correctly in `.env`
+- Ensure you have GPT-4o API access
+- Check OpenAI API quotas/billing
+
+**2. "EPS upload failed" error**
+- Verify eBay OAuth tokens are valid
+- Check image file is valid (JPG, PNG)
+- Ensure image is under 16MB
+
+**3. "Category selection failed" error**
+- Set `DEFAULT_CATEGORY_ID` in `.env` as fallback
+- Ensure `categories.json` exists
+- Check category ID is a leaf category
+
+**4. "Missing required policy env" error**
+- Verify all policy IDs are set in `.env`
+- Create business policies in eBay Seller Hub if needed
+
+### Checking Logs
+
+Application logs are saved to `logs/app.log`:
+
+```bash
+tail -f logs/app.log
+```
+
+## 📱 Mobile Use
+
+The app is fully mobile-responsive! You can:
+
+1. Access from any device on your local network
+2. Use your phone's camera to take photos
+3. Upload and create listings on the go
+
+To access from other devices on your network:
+1. Find your computer's local IP (e.g., `192.168.1.100`)
+2. The app is already configured to listen on all interfaces (`0.0.0.0`)
+3. Open `http://192.168.1.100:5001` on your phone/tablet
+
+## 🚀 Deployment
+
+For production deployment:
+
+1. **Change secrets** in `.env`
+2. **Set FLASK_DEBUG=false**
+3. **Use a production WSGI server** (gunicorn, uWSGI)
+4. **Enable HTTPS**
+5. **Configure firewall** appropriately
+
+Example with gunicorn:
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5001 main:app
+```
+
+## 📝 Important Notes
+
+- **Draft Listings**: All listings are created as drafts by default. Review them in eBay Seller Hub before publishing.
+- **API Limits**: Be aware of eBay API rate limits (5,000 calls/day for production)
+- **OpenAI Costs**: GPT-4o Vision calls cost money. Monitor usage at platform.openai.com
+- **Categories**: The `categories.json` file contains eBay UK categories. Update for other marketplaces.
+- **OAuth Tokens**: The app automatically refreshes access tokens using your refresh token
+
+## 📄 License
+
+Private project - All rights reserved
+
+## 🙏 Acknowledgments
+
+- eBay Developer Program
+- OpenAI GPT-4o Vision
+- Flask Framework
+
+---
+
+**Happy Listing!** 🎉
+
+For questions or issues, check the logs at `logs/app.log` or refer to eBay Developer documentation.
