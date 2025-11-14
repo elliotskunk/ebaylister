@@ -7,13 +7,23 @@ import base64
 import json
 import logging
 from typing import Dict, Any, Optional
-import openai
+from openai import OpenAI, OpenAIError
 
 log = logging.getLogger(__name__)
 
 # Initialize OpenAI client
-openai.api_key = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # Default to cost-effective model
+_openai_client = None
+
+def get_openai_client() -> OpenAI:
+    """Get or create OpenAI client instance"""
+    global _openai_client
+    if _openai_client is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise AIAnalysisError("OPENAI_API_KEY not set in environment")
+        _openai_client = OpenAI(api_key=api_key)
+    return _openai_client
 
 
 class AIAnalysisError(RuntimeError):
@@ -115,7 +125,8 @@ Return ONLY valid JSON with this exact structure:
 
         log.info(f"Sending image to {OPENAI_MODEL} for analysis...")
 
-        response = openai.chat.completions.create(
+        client = get_openai_client()
+        response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
             temperature=0.3,  # Lower temperature for more consistent output
@@ -142,7 +153,7 @@ Return ONLY valid JSON with this exact structure:
         log.info(f"Successfully analyzed image: {result['title'][:50]}...")
         return result
 
-    except openai.OpenAIError as e:
+    except OpenAIError as e:
         log.exception("OpenAI API error during image analysis")
         raise AIAnalysisError(f"OpenAI API error: {e}")
     except json.JSONDecodeError as e:
