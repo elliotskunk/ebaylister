@@ -20,8 +20,8 @@ from inventory_flow import (
     publish_offer,
     EbayError,
 )
-from ebay_picture_service import upload_image_to_eps, EPSError
-from ai_analyzer import analyze_image_for_listing, AIAnalysisError
+from ebay_picture_service import upload_image_to_eps, upload_multiple_images_to_eps, EPSError
+from ai_analyzer import analyze_image_for_listing, analyze_multiple_images_for_listing, AIAnalysisError
 from category_matcher import get_best_category_id
 
 # Load environment variables
@@ -30,7 +30,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max for multiple images
 
 # Configure logging
 LOG_DIR = os.getenv("LOG_DIR", "logs")
@@ -122,56 +122,70 @@ def health():
 @app.route("/upload", methods=["POST"])
 def upload_and_create_listing():
     """
-    Main endpoint: Upload image, analyze with AI, create eBay draft listing.
+    Main endpoint: Upload images, analyze with AI, create eBay draft listing.
 
     Accepts:
-        - multipart/form-data with 'image' file
+        - multipart/form-data with 'images' files (multiple) or 'image' file (single)
         - Optional form fields: category_id, price_override, title_override
 
     Returns:
         JSON with listing details and offer ID
     """
     try:
-        # 1. Validate image upload
-        if 'image' not in request.files:
-            return jsonify({"error": "No image file provided"}), 400
+        # 1. Validate image upload - support both 'images' (multiple) and 'image' (single)
+        image_files = request.files.getlist('images')
+        if not image_files or not image_files[0].filename:
+            # Fallback to single 'image' field for backward compatibility
+            if 'image' in request.files and request.files['image'].filename:
+                image_files = [request.files['image']]
+            else:
+                return jsonify({"error": "No image files provided"}), 400
 
-        image_file = request.files['image']
-        if not image_file.filename:
-            return jsonify({"error": "No image file selected"}), 400
+        # Filter out empty files
+        image_files = [f for f in image_files if f.filename]
+        if not image_files:
+            return jsonify({"error": "No valid image files selected"}), 400
 
-        log.info(f"Processing upload: {image_file.filename}")
+        if len(image_files) > 12:
+            return jsonify({"error": "Maximum 12 images allowed per listing"}), 400
+
+        log.info(f"Processing {len(image_files)} image(s): {[f.filename for f in image_files]}")
 
         # Get optional overrides from form
         category_override = request.form.get("category_id", "").strip()
         price_override = request.form.get("price_override", "").strip()
         title_override = request.form.get("title_override", "").strip()
 
-        # 2. Process image
-        try:
-            image_bytes = validate_and_process_image(image_file)
-        except ValueError as e:
-            return jsonify({"error": str(e)}), 400
+        # 2. Process all images
+        processed_images = []
+        for i, image_file in enumerate(image_files, 1):
+            try:
+                image_bytes = validate_and_process_image(image_file)
+                processed_images.append(image_bytes)
+                log.info(f"Processed image {i}/{len(image_files)}: {image_file.filename}")
+            except ValueError as e:
+                return jsonify({"error": f"Invalid image {i} ({image_file.filename}): {e}"}), 400
 
-        # 3. Analyze image with AI
-        log.info("Analyzing image with AI...")
+        # 3. Analyze images with AI (send all images in one request)
+        log.info(f"Analyzing {len(processed_images)} image(s) with AI...")
         try:
-            ai_result = analyze_image_for_listing(image_bytes)
+            ai_result = analyze_multiple_images_for_listing(processed_images)
             log.info(f"AI analysis complete: {ai_result['title'][:50]}...")
         except AIAnalysisError as e:
             log.error(f"AI analysis failed: {e}")
             return jsonify({"error": f"AI analysis failed: {e}"}), 500
 
-        # 4. Upload image to eBay Picture Service
-        log.info("Uploading image to eBay Picture Service...")
+        # 4. Upload all images to eBay Picture Service
+        log.info(f"Uploading {len(processed_images)} image(s) to eBay Picture Service...")
         try:
             token = get_oauth_token()
-            image_url = upload_image_to_eps(
-                token,
-                image_bytes,
-                image_name=f"{generate_sku()}.jpg"
-            )
-            log.info(f"Image uploaded to EPS: {image_url}")
+            sku_base = generate_sku()
+            images_data = [
+                (img_bytes, f"{sku_base}_{i}.jpg")
+                for i, img_bytes in enumerate(processed_images, 1)
+            ]
+            image_urls = upload_multiple_images_to_eps(token, images_data)
+            log.info(f"Uploaded {len(image_urls)} image(s) to EPS")
         except EPSError as e:
             log.error(f"EPS upload failed: {e}")
             return jsonify({"error": f"Image upload failed: {e}"}), 500
@@ -198,9 +212,9 @@ def upload_and_create_listing():
         price = float(price_override) if price_override else ai_result["price"]
 
         # 7. Generate SKU
-        sku = generate_sku()
+        sku = sku_base
 
-        # 8. Create inventory item
+        # 8. Create inventory item with ALL image URLs
         log.info(f"Creating inventory item: {sku}")
         try:
             inv_payload = build_inventory_item_payload(
@@ -208,7 +222,7 @@ def upload_and_create_listing():
                 title=title,
                 description=ai_result["description"],
                 quantity=1,
-                image_urls=[image_url],
+                image_urls=image_urls,  # Now supports multiple images
                 aspects=ai_result.get("aspects"),
             )
 
@@ -246,7 +260,8 @@ def upload_and_create_listing():
             "title": title,
             "price": price,
             "category_id": category_id,
-            "image_url": image_url,
+            "image_urls": image_urls,
+            "image_count": len(image_urls),
             "condition": ai_result.get("condition", "USED_GOOD"),
             "ai_analysis": {
                 "title": ai_result["title"],
@@ -411,7 +426,7 @@ def api_analyze_image():
 @app.errorhandler(413)
 def request_entity_too_large(error):
     """Handle file too large errors"""
-    return jsonify({"error": "File too large. Maximum size is 16MB."}), 413
+    return jsonify({"error": "Files too large. Maximum total size is 50MB."}), 413
 
 
 @app.errorhandler(500)

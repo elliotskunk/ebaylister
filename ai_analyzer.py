@@ -6,7 +6,7 @@ import os
 import base64
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from openai import OpenAI, OpenAIError
 
 log = logging.getLogger(__name__)
@@ -162,6 +162,157 @@ Return ONLY valid JSON with this exact structure:
     except Exception as e:
         log.exception("Unexpected error during image analysis")
         raise AIAnalysisError(f"Image analysis failed: {e}")
+
+
+def analyze_multiple_images_for_listing(
+    images_bytes: List[bytes],
+    category_hint: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Analyze multiple images using OpenAI vision models and generate eBay listing data.
+    All images are sent in a single API request for comprehensive analysis.
+
+    Args:
+        images_bytes: List of raw image bytes (JPEG format)
+        category_hint: Optional category hint to help with analysis
+
+    Returns:
+        dict: Same structure as analyze_image_for_listing
+
+    Raises:
+        AIAnalysisError: If analysis fails
+    """
+    if not images_bytes:
+        raise AIAnalysisError("No images provided for analysis")
+
+    if len(images_bytes) == 1:
+        # Use single image function for efficiency
+        return analyze_image_for_listing(images_bytes[0], category_hint)
+
+    try:
+        # Build content array with all images
+        content_parts = [
+            {
+                "type": "text",
+                "text": f"Analyze these {len(images_bytes)} product images and create a single eBay listing. "
+                       f"Consider all angles and details visible across all images. "
+                       f"Return only the JSON response optimized for Cassini SEO."
+            }
+        ]
+
+        # Add each image to the content
+        for i, img_bytes in enumerate(images_bytes, 1):
+            b64_image = base64.b64encode(img_bytes).decode('utf-8')
+            data_uri = f"data:image/jpeg;base64,{b64_image}"
+            content_parts.append({
+                "type": "image_url",
+                "image_url": {"url": data_uri}
+            })
+
+        if category_hint:
+            content_parts[0]["text"] += f"\n\nCategory hint: {category_hint}"
+
+        # Enhanced system prompt for multiple images
+        system_prompt = """You are an expert eBay listing specialist with deep knowledge of Cassini SEO (eBay's search algorithm).
+
+You are analyzing MULTIPLE product images to create a comprehensive eBay listing. Use ALL the images to:
+- Identify the product from different angles
+- Note any details, labels, tags, or measurements visible
+- Assess overall condition from all perspectives
+- Extract brand information if visible on any tag/label
+
+CRITICAL SEO RULES FOR CASSINI:
+1. TITLE: Must be keyword-rich, specific, and front-loaded with most important terms
+   - Include: Brand, Type/Model, Key Features, Size/Color, Condition
+   - Use exact product names, not generic terms
+   - Max 80 characters - use every character wisely
+   - Example: "Vintage Levi's 501 Jeans Blue Denim W32 L34 Made in USA 90s"
+
+2. ITEM SPECIFICS: Critical for Cassini ranking
+   - Provide as many accurate specifics as possible from ALL images
+   - Use eBay's standard aspect names (Brand, Size, Color, Material, Style, etc.)
+   - Be specific and detailed - check all images for tags/labels
+
+3. DESCRIPTION: Should be detailed and keyword-rich
+   - Include measurements, condition details, material composition
+   - Use HTML formatting for readability
+   - Mention any flaws honestly (visible in any image)
+   - Include style/fit information
+
+4. CONDITION: Be accurate based on ALL images
+   - NEW: Brand new with tags
+   - USED_EXCELLENT: Like new, minimal wear
+   - USED_GOOD: Normal wear, good condition
+   - USED_ACCEPTABLE: Noticeable wear but functional
+
+5. CATEGORY KEYWORDS: Help with categorization
+   - Provide specific terms that identify the item category
+
+Return ONLY valid JSON with this exact structure:
+{
+  "title": "SEO-optimized title max 80 chars",
+  "description": "Detailed HTML description based on all images",
+  "price": 19.99,
+  "condition": "USED_EXCELLENT",
+  "aspects": {
+    "Brand": ["Brand Name"],
+    "Type": ["Item Type"],
+    "Size": ["Size"],
+    "Colour": ["Color"],
+    "Material": ["Material"],
+    "Style": ["Style"],
+    "Fit": ["Fit Type"],
+    "Era": ["Decade/Era"],
+    "Country/Region of Manufacture": ["Country"],
+    "Features": ["Feature1", "Feature2"]
+  },
+  "category_keywords": "specific category identifying terms"
+}"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": content_parts},
+        ]
+
+        log.info(f"Sending {len(images_bytes)} images to {OPENAI_MODEL} for analysis...")
+
+        client = get_openai_client()
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=messages,
+            temperature=0.3,
+            max_tokens=2000,  # More tokens for multiple images
+        )
+
+        content = response.choices[0].message.content or ""
+        log.debug(f"AI response: {content[:200]}...")
+
+        # Extract JSON from response
+        start_idx = content.find("{")
+        end_idx = content.rfind("}") + 1
+
+        if start_idx == -1 or end_idx <= start_idx:
+            log.error(f"No JSON found in AI response: {content[:500]}")
+            raise AIAnalysisError("AI did not return valid JSON")
+
+        json_str = content[start_idx:end_idx]
+        parsed = json.loads(json_str)
+
+        # Validate and normalize the response
+        result = _normalize_ai_response(parsed)
+
+        log.info(f"Successfully analyzed {len(images_bytes)} images: {result['title'][:50]}...")
+        return result
+
+    except OpenAIError as e:
+        log.exception("OpenAI API error during multi-image analysis")
+        raise AIAnalysisError(f"OpenAI API error: {e}")
+    except json.JSONDecodeError as e:
+        log.exception(f"Failed to parse AI response as JSON")
+        raise AIAnalysisError(f"Invalid JSON from AI: {e}")
+    except Exception as e:
+        log.exception("Unexpected error during multi-image analysis")
+        raise AIAnalysisError(f"Multi-image analysis failed: {e}")
 
 
 def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:

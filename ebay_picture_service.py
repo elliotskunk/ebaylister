@@ -3,11 +3,10 @@ eBay Picture Service (EPS) Integration
 Upload images to eBay's picture service and get back URLs for use in listings.
 """
 import os
-import base64
 import logging
 import requests
 from xml.etree import ElementTree as ET
-from typing import Optional
+from typing import Optional, List, Tuple
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +22,11 @@ class EPSError(RuntimeError):
 
 def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.jpg") -> str:
     """
-    Upload an image to eBay Picture Service (EPS) using the Trading API.
+    Upload an image to eBay Picture Service (EPS) using multipart/form-data.
 
     Args:
         token: eBay OAuth access token
-        image_bytes: Raw image bytes
+        image_bytes: Raw image bytes (JPEG format)
         image_name: Name for the image file
 
     Returns:
@@ -36,19 +35,12 @@ def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.
     Raises:
         EPSError: If upload fails
     """
-    # Encode image to base64
-    b64_image = base64.b64encode(image_bytes).decode('utf-8')
-
-    # Build XML request for UploadSiteHostedPictures
+    # Build XML request (without image data - image goes in multipart)
     xml_request = f"""<?xml version="1.0" encoding="utf-8"?>
 <UploadSiteHostedPicturesRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-    <RequesterCredentials>
-        <eBayAuthToken>{escape_xml(token)}</eBayAuthToken>
-    </RequesterCredentials>
-    <WarningLevel>High</WarningLevel>
-    <PictureData>{b64_image}</PictureData>
     <PictureName>{escape_xml(image_name)}</PictureName>
     <PictureSet>Supersize</PictureSet>
+    <ExtensionInDays>30</ExtensionInDays>
 </UploadSiteHostedPicturesRequest>"""
 
     headers = {
@@ -56,7 +48,12 @@ def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.
         "X-EBAY-API-SITEID": SITE_ID,
         "X-EBAY-API-COMPATIBILITY-LEVEL": COMPAT_LEVEL,
         "X-EBAY-API-IAF-TOKEN": token,
-        "Content-Type": "text/xml; charset=utf-8",
+    }
+
+    # Use multipart/form-data with image as binary file
+    files = {
+        'XML Payload': ('request.xml', xml_request.encode('utf-8'), 'text/xml'),
+        'image': (image_name, image_bytes, 'image/jpeg'),
     }
 
     try:
@@ -64,10 +61,12 @@ def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.
         response = requests.post(
             TRADING_API_URL,
             headers=headers,
-            data=xml_request.encode('utf-8'),
-            timeout=60  # Image uploads can take longer
+            files=files,
+            timeout=120  # Image uploads can take longer
         )
         response.raise_for_status()
+
+        log.debug(f"EPS response: {response.text[:1000]}")
 
         # Parse XML response
         root = ET.fromstring(response.text)
@@ -77,8 +76,10 @@ def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.
         ack = root.find(".//e:Ack", ns)
         if ack is not None and ack.text in ("Failure", "PartialFailure"):
             error_msg = root.find(".//e:Errors/e:LongMessage", ns)
+            error_code = root.find(".//e:Errors/e:ErrorCode", ns)
             error_text = error_msg.text if error_msg is not None else "Unknown error"
-            log.error(f"EPS upload failed: {error_text}")
+            error_code_text = error_code.text if error_code is not None else "N/A"
+            log.error(f"EPS upload failed: [{error_code_text}] {error_text}")
             raise EPSError(f"EPS upload failed: {error_text}")
 
         # Extract the full-size URL
@@ -95,11 +96,11 @@ def upload_image_to_eps(token: str, image_bytes: bytes, image_name: str = "item.
         log.exception("HTTP error uploading to EPS")
         raise EPSError(f"HTTP error uploading image: {e}")
     except ET.ParseError as e:
-        log.exception("XML parse error from EPS response")
+        log.exception(f"XML parse error from EPS response: {response.text[:500]}")
         raise EPSError(f"Invalid XML response from EPS: {e}")
 
 
-def upload_multiple_images_to_eps(token: str, images_data: list[tuple[bytes, str]]) -> list[str]:
+def upload_multiple_images_to_eps(token: str, images_data: List[Tuple[bytes, str]]) -> List[str]:
     """
     Upload multiple images to EPS.
 
@@ -116,6 +117,7 @@ def upload_multiple_images_to_eps(token: str, images_data: list[tuple[bytes, str
     urls = []
     for i, (image_bytes, image_name) in enumerate(images_data, 1):
         try:
+            log.info(f"Uploading image {i}/{len(images_data)}...")
             url = upload_image_to_eps(token, image_bytes, image_name)
             urls.append(url)
         except EPSError as e:

@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
@@ -92,10 +92,57 @@
             display: none;
         }
 
-        .preview-image {
-            max-width: 100%;
-            border-radius: 10px;
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
             margin-bottom: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .preview-item .image-number {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .image-count {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
 
         .form-group {
@@ -238,6 +285,18 @@
             margin-top: 15px;
         }
 
+        .add-more-btn {
+            width: 100%;
+            padding: 10px;
+            background: #f0f0ff;
+            color: #667eea;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 1.5em;
@@ -250,6 +309,10 @@
             .upload-area {
                 padding: 30px 15px;
             }
+
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
         }
     </style>
 </head>
@@ -257,28 +320,30 @@
     <div class="container">
         <div class="header">
             <h1>📸 eBay Lister</h1>
-            <p>Upload, analyze with AI, and create optimized listings</p>
+            <p>Upload multiple images, analyze with AI, and create optimized listings</p>
         </div>
 
         <div class="card">
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📷</div>
-                    <h3>Upload Product Image</h3>
-                    <p>Click to browse or drag & drop</p>
-                    <p style="margin-top: 5px; font-size: 0.8em;">Max 16MB - JPG, PNG, WEBP</p>
+                    <h3>Upload Product Images</h3>
+                    <p>Click to browse or drag & drop multiple images</p>
+                    <p style="margin-top: 5px; font-size: 0.8em;">Max 12 images • 50MB total • JPG, PNG, WEBP</p>
                 </div>
-                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <input type="file" id="imageInput" name="images" accept="image/*" multiple required>
 
                 <div class="preview-container" id="previewContainer">
-                    <img id="previewImage" class="preview-image" alt="Preview">
-                    <button type="button" class="new-upload-btn" id="changeImageBtn">Change Image</button>
+                    <div class="image-count" id="imageCount">0 images selected</div>
+                    <div class="preview-grid" id="previewGrid"></div>
+                    <button type="button" class="add-more-btn" id="addMoreBtn">+ Add More Images</button>
+                    <button type="button" class="new-upload-btn" id="clearAllBtn">Clear All Images</button>
                 </div>
 
                 <div class="form-group">
                     <label for="titleOverride">Title Override (optional)</label>
                     <input type="text" id="titleOverride" name="title_override" maxlength="80" placeholder="Leave blank to use AI-generated title">
-                    <small>AI will generate an SEO-optimized title. Override only if needed.</small>
+                    <small>AI will generate an SEO-optimized title from all images. Override only if needed.</small>
                 </div>
 
                 <div class="form-group">
@@ -300,7 +365,7 @@
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p id="loadingText">Analyzing image with AI...</p>
+                <p id="loadingText">Processing images...</p>
             </div>
 
             <div class="result" id="result"></div>
@@ -311,13 +376,18 @@
         const uploadArea = document.getElementById('uploadArea');
         const imageInput = document.getElementById('imageInput');
         const previewContainer = document.getElementById('previewContainer');
-        const previewImage = document.getElementById('previewImage');
-        const changeImageBtn = document.getElementById('changeImageBtn');
+        const previewGrid = document.getElementById('previewGrid');
+        const imageCount = document.getElementById('imageCount');
+        const addMoreBtn = document.getElementById('addMoreBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
         const uploadForm = document.getElementById('uploadForm');
         const submitBtn = document.getElementById('submitBtn');
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
         const result = document.getElementById('result');
+
+        // Store all selected files
+        let selectedFiles = [];
 
         // Click to upload
         uploadArea.addEventListener('click', () => imageInput.click());
@@ -335,41 +405,104 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length > 0) {
-                imageInput.files = files;
-                handleImageSelect();
+                addFiles(files);
             }
         });
 
         // File selection
-        imageInput.addEventListener('change', handleImageSelect);
+        imageInput.addEventListener('change', () => {
+            const files = Array.from(imageInput.files);
+            addFiles(files);
+        });
 
-        function handleImageSelect() {
-            const file = imageInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImage.src = e.target.result;
-                    uploadArea.style.display = 'none';
-                    previewContainer.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+        // Add more button
+        addMoreBtn.addEventListener('click', () => imageInput.click());
+
+        // Clear all button
+        clearAllBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            updatePreview();
+        });
+
+        function addFiles(newFiles) {
+            const maxFiles = 12;
+            const remaining = maxFiles - selectedFiles.length;
+
+            if (remaining <= 0) {
+                alert('Maximum 12 images allowed per listing.');
+                return;
             }
+
+            const filesToAdd = newFiles.slice(0, remaining);
+            selectedFiles = selectedFiles.concat(filesToAdd);
+
+            if (selectedFiles.length >= maxFiles) {
+                alert(`Added ${filesToAdd.length} image(s). Maximum of ${maxFiles} images reached.`);
+            }
+
+            updatePreview();
         }
 
-        // Change image button
-        changeImageBtn.addEventListener('click', () => {
-            imageInput.value = '';
-            uploadArea.style.display = 'block';
-            previewContainer.style.display = 'none';
-        });
+        function updatePreview() {
+            if (selectedFiles.length === 0) {
+                previewContainer.style.display = 'none';
+                uploadArea.style.display = 'block';
+                imageCount.textContent = '0 images selected';
+                return;
+            }
+
+            uploadArea.style.display = 'none';
+            previewContainer.style.display = 'block';
+            imageCount.textContent = `${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} selected`;
+
+            previewGrid.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <button type="button" class="remove-btn" onclick="removeImage(${index})">✕</button>
+                        <span class="image-number">#${index + 1}</span>
+                    `;
+                    previewGrid.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeImage(index) {
+            selectedFiles.splice(index, 1);
+            updatePreview();
+        }
 
         // Form submission
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = new FormData(uploadForm);
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one image.');
+                return;
+            }
+
+            const formData = new FormData();
+
+            // Add all images
+            selectedFiles.forEach((file) => {
+                formData.append('images', file);
+            });
+
+            // Add other form fields
+            const titleOverride = document.getElementById('titleOverride').value;
+            const priceOverride = document.getElementById('priceOverride').value;
+            const categoryOverride = document.getElementById('categoryOverride').value;
+
+            if (titleOverride) formData.append('title_override', titleOverride);
+            if (priceOverride) formData.append('price_override', priceOverride);
+            if (categoryOverride) formData.append('category_id', categoryOverride);
 
             // Show loading
             submitBtn.disabled = true;
@@ -377,8 +510,8 @@
             result.style.display = 'none';
 
             const loadingSteps = [
-                'Uploading image...',
-                'Analyzing with AI vision model...',
+                'Processing images...',
+                `Analyzing ${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} with AI...`,
                 'Uploading to eBay Picture Service...',
                 'Determining best category...',
                 'Creating draft listing...'
@@ -390,7 +523,7 @@
                     loadingText.textContent = loadingSteps[stepIndex];
                     stepIndex++;
                 }
-            }, 2000);
+            }, 2500);
 
             try {
                 const response = await fetch('/upload', {
@@ -407,7 +540,7 @@
                 if (response.ok && data.success) {
                     result.innerHTML = `
                         <div class="success">
-                            <strong>✅ Success!</strong> Draft listing created on eBay!
+                            <strong>✅ Success!</strong> Draft listing created with ${data.image_count} image${data.image_count !== 1 ? 's' : ''}!
                         </div>
                         <div class="result-details">
                             <h4>Listing Details</h4>
@@ -415,6 +548,7 @@
                             <div class="result-item"><strong>Price:</strong> £${data.price.toFixed(2)}</div>
                             <div class="result-item"><strong>Category ID:</strong> ${data.category_id}</div>
                             <div class="result-item"><strong>Condition:</strong> ${data.condition}</div>
+                            <div class="result-item"><strong>Images:</strong> ${data.image_count}</div>
                             <div class="result-item"><strong>SKU:</strong> ${data.sku}</div>
                             <div class="result-item"><strong>Offer ID:</strong> ${data.offer_id}</div>
                             ${data.note ? `<div class="result-item" style="margin-top: 15px; color: #856404; background: #fff3cd; border: 1px solid #ffeeba;">ℹ️ ${data.note}</div>` : ''}
