@@ -73,22 +73,30 @@ def build_inventory_item_payload(
         product["mpn"] = mpn
 
     # Add aspects (item specifics)
+    validated_aspects = {}
+
     if aspects:
         # Filter and validate aspects
-        validated_aspects = {}
         for key, values in aspects.items():
-            # Skip Brand if we already added it
-            if key == "Brand" and "brand" in product:
-                continue
-
             # Ensure values is a list of strings
             if isinstance(values, list) and values:
                 validated_aspects[key] = [str(v) for v in values if v]
             elif values:
                 validated_aspects[key] = [str(values)]
 
-        if validated_aspects:
-            product["aspects"] = validated_aspects
+    # IMPORTANT: Brand is REQUIRED for many eBay categories (including T-shirts)
+    # Ensure Brand is always present in aspects
+    if "Brand" not in validated_aspects:
+        if "brand" in product:
+            validated_aspects["Brand"] = [product["brand"]]
+        else:
+            validated_aspects["Brand"] = ["Unbranded"]
+            # Also set product brand since Brand is now in aspects
+            product["brand"] = "Unbranded"
+            product["mpn"] = "Does Not Apply"
+
+    if validated_aspects:
+        product["aspects"] = validated_aspects
 
     return {
         "sku": sku,

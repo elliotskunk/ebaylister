@@ -221,6 +221,7 @@ def upload_and_create_listing():
 
         # 8. Create inventory item with ALL image URLs
         log.info(f"Creating inventory item: {sku}")
+        log.info(f"Brand from AI: {ai_result.get('aspects', {}).get('Brand', 'NOT FOUND')}")
         try:
             inv_payload = build_inventory_item_payload(
                 sku=sku,
