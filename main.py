@@ -206,16 +206,21 @@ def upload_and_create_listing():
         log.info(f"Applied required aspects for {item_type}: {list(aspects.keys())}")
 
         # 6. Determine category
+        # Priority: user override > item-type default > environment default
         if category_override:
             category_id = category_override
             log.info(f"Using override category: {category_id}")
+        elif item_type != "general":
+            # Use item-type specific default category (more accurate than global default)
+            category_id = get_default_category_id(item_type)
+            log.info(f"Using default category for {item_type}: {category_id}")
         elif DEFAULT_CATEGORY_ID:
             category_id = DEFAULT_CATEGORY_ID
             log.info(f"Using environment default category: {category_id}")
         else:
-            # Use item-type specific default category
-            category_id = get_default_category_id(item_type)
-            log.info(f"Using default category for {item_type}: {category_id}")
+            # Fallback to general category
+            category_id = get_default_category_id("general")
+            log.info(f"Using fallback category: {category_id}")
 
         # 7. Apply overrides if provided
         title = title_override if title_override else ai_result["title"]
