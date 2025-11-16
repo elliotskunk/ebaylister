@@ -100,6 +100,27 @@ def build_inventory_item_payload(
     if "Department" not in validated_aspects:
         validated_aspects["Department"] = ["Unisex Adults"]
 
+    # IMPORTANT: Colour must be a SINGLE value, not multiple
+    # If AI returns multiple colours, use "Multicoloured"
+    if "Colour" in validated_aspects:
+        colours = validated_aspects["Colour"]
+        if len(colours) > 1:
+            validated_aspects["Colour"] = ["Multicoloured"]
+        elif len(colours) == 1:
+            # Keep single colour
+            pass
+        else:
+            validated_aspects["Colour"] = ["Multicoloured"]
+    elif "Color" in validated_aspects:
+        # Also check American spelling
+        colours = validated_aspects["Color"]
+        if len(colours) > 1:
+            validated_aspects["Colour"] = ["Multicoloured"]
+            del validated_aspects["Color"]
+        elif len(colours) == 1:
+            validated_aspects["Colour"] = colours
+            del validated_aspects["Color"]
+
     if validated_aspects:
         product["aspects"] = validated_aspects
 
