@@ -191,16 +191,21 @@ def upload_and_create_listing():
             return jsonify({"error": f"Image upload failed: {e}"}), 500
 
         # 5. Determine category
+        # For now, use DEFAULT_CATEGORY_ID (T-shirts) to ensure clothing conditions work
+        # TODO: Re-enable auto-category matching after testing
         if category_override:
             category_id = category_override
             log.info(f"Using override category: {category_id}")
+        elif DEFAULT_CATEGORY_ID:
+            category_id = DEFAULT_CATEGORY_ID
+            log.info(f"Using default category (T-shirts): {category_id}")
         else:
             try:
                 category_id = get_best_category_id(
                     title=ai_result["title"],
                     aspects=ai_result.get("aspects"),
                     category_keywords=ai_result.get("category_keywords"),
-                    fallback_category_id=DEFAULT_CATEGORY_ID
+                    fallback_category_id="15687"  # Men's T-Shirts
                 )
                 log.info(f"Auto-selected category: {category_id}")
             except ValueError as e:
@@ -223,7 +228,7 @@ def upload_and_create_listing():
                 description=ai_result["description"],
                 quantity=1,
                 image_urls=image_urls,  # Now supports multiple images
-                condition=ai_result.get("condition", "USED_VERY_GOOD"),
+                condition=ai_result.get("condition", "PRE_OWNED_EXCELLENT"),
                 aspects=ai_result.get("aspects"),
             )
 

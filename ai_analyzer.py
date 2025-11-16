@@ -335,50 +335,59 @@ def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:
     except (ValueError, TypeError):
         price = 9.99
 
-    # Normalize condition - use VALID eBay ConditionEnum values
-    # See: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ConditionEnum
-    # Valid enums: NEW, LIKE_NEW, USED_EXCELLENT, USED_VERY_GOOD, USED_GOOD, USED_ACCEPTABLE, etc.
-    # IMPORTANT: There is NO plain "VERY_GOOD" or "GOOD" enum - those are INVALID!
-    # The UI displays "Very Good" but the API enum is "USED_VERY_GOOD"
-    condition = str(data.get("condition", "USED_VERY_GOOD")).upper().replace(" ", "_")
+    # Normalize condition - use VALID eBay ConditionEnum values for CLOTHING
+    # For clothing categories, use:
+    # - NEW (new with tags)
+    # - NEW_WITHOUT_TAGS
+    # - NEW_WITH_DEFECTS
+    # - PRE_OWNED_EXCELLENT (pre-owned - excellent)
+    # - USED_GOOD (pre-owned - good)
+    # - PRE_OWNED_FAIR (pre-owned - fair)
+    condition = str(data.get("condition", "PRE_OWNED_EXCELLENT")).upper().replace(" ", "_").replace("-", "_")
 
-    # Valid eBay ConditionEnum values per official documentation
-    valid_conditions = {
-        "NEW", "LIKE_NEW", "NEW_OTHER", "NEW_WITH_DEFECTS",
-        "CERTIFIED_REFURBISHED", "EXCELLENT_REFURBISHED", "VERY_GOOD_REFURBISHED", "GOOD_REFURBISHED",
-        "SELLER_REFURBISHED", "USED_EXCELLENT", "USED_VERY_GOOD", "USED_GOOD", "USED_ACCEPTABLE",
-        "PRE_OWNED_EXCELLENT", "PRE_OWNED_FAIR", "FOR_PARTS_OR_NOT_WORKING"
-    }
-
-    # Map INVALID values to VALID eBay enum values
-    invalid_to_valid = {
-        "VERY_GOOD": "USED_VERY_GOOD",  # INVALID! Must use USED_VERY_GOOD
-        "GOOD": "USED_GOOD",  # INVALID! Must use USED_GOOD
-        "ACCEPTABLE": "USED_ACCEPTABLE",  # INVALID! Must use USED_ACCEPTABLE
-        "EXCELLENT": "USED_EXCELLENT",
-        "FAIR": "PRE_OWNED_FAIR",
+    # Map to VALID clothing condition enums
+    condition_mapping = {
+        # New conditions
+        "NEW": "NEW",
         "NEW_WITH_TAGS": "NEW",
-        "NEW_WITHOUT_TAGS": "NEW",
+        "NEW_WITHOUT_TAGS": "NEW_WITHOUT_TAGS",
+        "NEW_WITH_DEFECTS": "NEW_WITH_DEFECTS",
+
+        # Pre-owned conditions for CLOTHING
+        "PRE_OWNED_EXCELLENT": "PRE_OWNED_EXCELLENT",
+        "PREOWNED_EXCELLENT": "PRE_OWNED_EXCELLENT",
+        "PRE_OWNED_GOOD": "USED_GOOD",
+        "PREOWNED_GOOD": "USED_GOOD",
+        "PRE_OWNED_FAIR": "PRE_OWNED_FAIR",
+        "PREOWNED_FAIR": "PRE_OWNED_FAIR",
+
+        # Map other conditions to clothing equivalents
+        "USED_EXCELLENT": "PRE_OWNED_EXCELLENT",
+        "USED_VERY_GOOD": "PRE_OWNED_EXCELLENT",
+        "USED_GOOD": "USED_GOOD",
+        "USED_ACCEPTABLE": "PRE_OWNED_FAIR",
+        "LIKE_NEW": "PRE_OWNED_EXCELLENT",
+        "VERY_GOOD": "PRE_OWNED_EXCELLENT",
+        "GOOD": "USED_GOOD",
+        "EXCELLENT": "PRE_OWNED_EXCELLENT",
+        "ACCEPTABLE": "PRE_OWNED_FAIR",
+        "FAIR": "PRE_OWNED_FAIR",
     }
 
-    if condition in invalid_to_valid:
-        condition = invalid_to_valid[condition]
-    elif condition not in valid_conditions:
-        # Try to infer from keywords
+    if condition in condition_mapping:
+        condition = condition_mapping[condition]
+    else:
+        # Default for unknown conditions
         if "NEW" in condition:
             condition = "NEW"
-        elif "LIKE" in condition and "NEW" in condition:
-            condition = "LIKE_NEW"
-        elif "EXCELLENT" in condition:
-            condition = "USED_EXCELLENT"
-        elif "VERY" in condition and "GOOD" in condition:
-            condition = "USED_VERY_GOOD"
+        elif "EXCELLENT" in condition or "LIKE" in condition:
+            condition = "PRE_OWNED_EXCELLENT"
         elif "GOOD" in condition:
             condition = "USED_GOOD"
-        elif "ACCEPTABLE" in condition or "FAIR" in condition:
-            condition = "USED_ACCEPTABLE"
+        elif "FAIR" in condition or "ACCEPTABLE" in condition:
+            condition = "PRE_OWNED_FAIR"
         else:
-            condition = "USED_VERY_GOOD"  # Safe default - widely supported
+            condition = "PRE_OWNED_EXCELLENT"  # Safe default for clothing
 
     # Normalize aspects/item specifics
     aspects = data.get("aspects", {})
