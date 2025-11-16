@@ -29,19 +29,18 @@ ITEM_TYPE_RULES = {
         "name": "Kitchenware/Crockery",
         "default_category_id": "20693",  # Mugs category
         "condition_mapping": {
-            # Crockery only allows: NEW, NEW_OTHER, or PRE_OWNED (used)
-            # Note: The ConditionEnum for "Used" (ID 3000) is "PRE_OWNED"
+            # Try USED_GOOD as it's a valid ConditionEnum
             "new": "NEW",
             "new_other": "NEW_OTHER",
-            "like_new": "PRE_OWNED",
-            "excellent": "PRE_OWNED",
-            "very_good": "PRE_OWNED",
-            "good": "PRE_OWNED",
-            "fair": "PRE_OWNED",
-            "acceptable": "PRE_OWNED",
-            "used": "PRE_OWNED",
+            "like_new": "USED_GOOD",
+            "excellent": "USED_GOOD",
+            "very_good": "USED_GOOD",
+            "good": "USED_GOOD",
+            "fair": "USED_GOOD",
+            "acceptable": "USED_GOOD",
+            "used": "USED_GOOD",
         },
-        "default_condition": "PRE_OWNED",  # Maps to "Used" (condition ID 3000)
+        "default_condition": "USED_GOOD",
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
