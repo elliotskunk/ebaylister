@@ -23,6 +23,7 @@ from inventory_flow import (
 from ebay_picture_service import upload_image_to_eps, upload_multiple_images_to_eps, EPSError
 from ai_analyzer import analyze_image_for_listing, analyze_multiple_images_for_listing, AIAnalysisError
 from category_matcher import get_best_category_id
+from category_rules import get_item_type_rules, normalize_condition_for_type, apply_required_aspects, get_default_category_id
 
 # Load environment variables
 load_dotenv()
@@ -190,38 +191,42 @@ def upload_and_create_listing():
             log.error(f"EPS upload failed: {e}")
             return jsonify({"error": f"Image upload failed: {e}"}), 500
 
-        # 5. Determine category
-        # For now, use DEFAULT_CATEGORY_ID (T-shirts) to ensure clothing conditions work
-        # TODO: Re-enable auto-category matching after testing
+        # 5. Extract item type and apply category-specific rules
+        item_type = ai_result.get("item_type", "general")
+        log.info(f"Detected item type: {item_type}")
+
+        # Apply category-specific rules to condition
+        raw_condition = ai_result.get("condition", "excellent")
+        condition = normalize_condition_for_type(raw_condition, item_type)
+        log.info(f"Normalized condition: {raw_condition} -> {condition}")
+
+        # Apply required aspects for the item type
+        aspects = ai_result.get("aspects", {})
+        aspects = apply_required_aspects(aspects, item_type)
+        log.info(f"Applied required aspects for {item_type}: {list(aspects.keys())}")
+
+        # 6. Determine category
         if category_override:
             category_id = category_override
             log.info(f"Using override category: {category_id}")
         elif DEFAULT_CATEGORY_ID:
             category_id = DEFAULT_CATEGORY_ID
-            log.info(f"Using default category (T-shirts): {category_id}")
+            log.info(f"Using environment default category: {category_id}")
         else:
-            try:
-                category_id = get_best_category_id(
-                    title=ai_result["title"],
-                    aspects=ai_result.get("aspects"),
-                    category_keywords=ai_result.get("category_keywords"),
-                    fallback_category_id="15687"  # Men's T-Shirts
-                )
-                log.info(f"Auto-selected category: {category_id}")
-            except ValueError as e:
-                log.error(f"Category selection failed: {e}")
-                return jsonify({"error": str(e)}), 400
+            # Use item-type specific default category
+            category_id = get_default_category_id(item_type)
+            log.info(f"Using default category for {item_type}: {category_id}")
 
-        # 6. Apply overrides if provided
+        # 7. Apply overrides if provided
         title = title_override if title_override else ai_result["title"]
         price = float(price_override) if price_override else ai_result["price"]
 
-        # 7. Generate SKU
+        # 8. Generate SKU
         sku = sku_base
 
-        # 8. Create inventory item with ALL image URLs
+        # 9. Create inventory item with ALL image URLs
         log.info(f"Creating inventory item: {sku}")
-        log.info(f"Brand from AI: {ai_result.get('aspects', {}).get('Brand', 'NOT FOUND')}")
+        log.info(f"Brand from aspects: {aspects.get('Brand', 'NOT FOUND')}")
         try:
             inv_payload = build_inventory_item_payload(
                 sku=sku,
@@ -229,8 +234,8 @@ def upload_and_create_listing():
                 description=ai_result["description"],
                 quantity=1,
                 image_urls=image_urls,  # Now supports multiple images
-                condition=ai_result.get("condition", "PRE_OWNED_EXCELLENT"),
-                aspects=ai_result.get("aspects"),
+                condition=condition,  # Already normalized for item type
+                aspects=aspects,  # Already has required aspects applied
             )
 
             create_or_replace_inventory_item(token, sku, inv_payload)
@@ -240,7 +245,7 @@ def upload_and_create_listing():
             log.error(f"Failed to create inventory item: {e}")
             return jsonify({"error": f"Failed to create inventory item: {e}"}), 502
 
-        # 9. Create offer (draft listing)
+        # 10. Create offer (draft listing)
         log.info(f"Creating offer for SKU: {sku}")
         try:
             offer_payload = build_offer_payload(
@@ -258,7 +263,7 @@ def upload_and_create_listing():
             log.error(f"Failed to create offer: {e}")
             return jsonify({"error": f"Failed to create offer: {e}"}), 502
 
-        # 10. Store listing data in session for preview
+        # 11. Store listing data in session for preview
         session['pending_listing'] = {
             "sku": sku,
             "offer_id": offer_id,
@@ -267,13 +272,14 @@ def upload_and_create_listing():
             "price": price,
             "currency": "GBP",
             "category_id": category_id,
-            "category_name": ai_result.get("category_keywords", ["General"])[0] if ai_result.get("category_keywords") else "General",
+            "category_name": f"{get_item_type_rules(item_type)['name']} ({item_type})",
             "image_urls": image_urls,
-            "condition": ai_result.get("condition", "USED_VERY_GOOD"),
+            "condition": condition,  # Use the normalized condition
             "quantity": 1,
             "marketplace": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB"),
-            "aspects": ai_result.get("aspects", {}),
-            "brand": ai_result.get("aspects", {}).get("Brand", [""])[0] if ai_result.get("aspects", {}).get("Brand") else "",
+            "aspects": aspects,  # Use the processed aspects with required fields
+            "brand": aspects.get("Brand", [""])[0] if aspects.get("Brand") else "",
+            "item_type": item_type,
         }
 
         log.info(f"Redirecting to preview page for offer: {offer_id}")

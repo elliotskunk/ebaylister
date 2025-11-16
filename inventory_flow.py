@@ -84,8 +84,8 @@ def build_inventory_item_payload(
             elif values:
                 validated_aspects[key] = [str(values)]
 
-    # IMPORTANT: Brand is REQUIRED for many eBay categories (including T-shirts)
-    # Ensure Brand is always present in aspects
+    # Brand is REQUIRED for many eBay categories
+    # If not in aspects but should be, add it
     if "Brand" not in validated_aspects:
         if "brand" in product:
             validated_aspects["Brand"] = [product["brand"]]
@@ -95,31 +95,10 @@ def build_inventory_item_payload(
             product["brand"] = "Unbranded"
             product["mpn"] = "Does Not Apply"
 
-    # IMPORTANT: Department is REQUIRED for clothing categories
-    # Default to "Unisex Adults" unless specified
-    if "Department" not in validated_aspects:
-        validated_aspects["Department"] = ["Unisex Adults"]
-
-    # IMPORTANT: Colour must be a SINGLE value, not multiple
-    # If AI returns multiple colours, use "Multicoloured"
-    if "Colour" in validated_aspects:
-        colours = validated_aspects["Colour"]
-        if len(colours) > 1:
-            validated_aspects["Colour"] = ["Multicoloured"]
-        elif len(colours) == 1:
-            # Keep single colour
-            pass
-        else:
-            validated_aspects["Colour"] = ["Multicoloured"]
-    elif "Color" in validated_aspects:
-        # Also check American spelling
-        colours = validated_aspects["Color"]
-        if len(colours) > 1:
-            validated_aspects["Colour"] = ["Multicoloured"]
-            del validated_aspects["Color"]
-        elif len(colours) == 1:
-            validated_aspects["Colour"] = colours
-            del validated_aspects["Color"]
+    # Handle Color -> Colour conversion for UK marketplace
+    if "Color" in validated_aspects and "Colour" not in validated_aspects:
+        validated_aspects["Colour"] = validated_aspects["Color"]
+        del validated_aspects["Color"]
 
     if validated_aspects:
         product["aspects"] = validated_aspects

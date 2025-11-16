@@ -86,7 +86,15 @@ CRITICAL SEO RULES FOR CASSINI:
    - USED_VERY_GOOD: Light wear, fully functional
    - FOR_PARTS_OR_NOT_WORKING: Damaged or non-functional
 
-5. CATEGORY KEYWORDS: Help with categorization
+5. ITEM TYPE: Identify the broad category of item (CRITICAL for proper listing)
+   - clothing (t-shirts, dresses, jackets, jeans, etc.)
+   - kitchenware (mugs, plates, bowls, crockery, ceramics)
+   - shoes (trainers, boots, heels, sandals)
+   - books (books, DVDs, CDs, media)
+   - electronics (phones, laptops, cameras, gadgets)
+   - general (anything else)
+
+6. CATEGORY KEYWORDS: Help with categorization
    - Provide specific terms that identify the item category
 
 Return ONLY valid JSON with this exact structure:
@@ -95,6 +103,7 @@ Return ONLY valid JSON with this exact structure:
   "description": "Detailed HTML description",
   "price": 19.99,
   "condition": "USED_EXCELLENT",
+  "item_type": "clothing",
   "aspects": {
     "Brand": ["Brand Name"],
     "Type": ["Item Type"],
@@ -245,7 +254,15 @@ CRITICAL SEO RULES FOR CASSINI:
    - USED_VERY_GOOD: Light wear, fully functional
    - FOR_PARTS_OR_NOT_WORKING: Damaged or non-functional
 
-5. CATEGORY KEYWORDS: Help with categorization
+5. ITEM TYPE: Identify the broad category of item (CRITICAL for proper listing)
+   - clothing (t-shirts, dresses, jackets, jeans, etc.)
+   - kitchenware (mugs, plates, bowls, crockery, ceramics)
+   - shoes (trainers, boots, heels, sandals)
+   - books (books, DVDs, CDs, media)
+   - electronics (phones, laptops, cameras, gadgets)
+   - general (anything else)
+
+6. CATEGORY KEYWORDS: Help with categorization
    - Provide specific terms that identify the item category
 
 Return ONLY valid JSON with this exact structure:
@@ -254,6 +271,7 @@ Return ONLY valid JSON with this exact structure:
   "description": "Detailed HTML description based on all images",
   "price": 19.99,
   "condition": "USED_EXCELLENT",
+  "item_type": "clothing",
   "aspects": {
     "Brand": ["Brand Name"],
     "Type": ["Item Type"],
@@ -411,11 +429,18 @@ def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:
     # Category keywords
     category_keywords = str(data.get("category_keywords", "")).strip()
 
+    # Item type (for category-specific rules)
+    item_type = str(data.get("item_type", "general")).lower().strip()
+    valid_types = ["clothing", "kitchenware", "shoes", "books", "electronics", "general"]
+    if item_type not in valid_types:
+        item_type = "general"
+
     return {
         "title": title,
         "description": description,
         "price": price,
         "condition": condition,
+        "item_type": item_type,
         "aspects": normalized_aspects,
         "category_keywords": category_keywords,
     }
