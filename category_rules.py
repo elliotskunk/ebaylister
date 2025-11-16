@@ -29,15 +29,18 @@ ITEM_TYPE_RULES = {
         "name": "Kitchenware/Crockery",
         "default_category_id": "20693",  # Mugs category
         "condition_mapping": {
+            # Crockery only allows: NEW, NEW_OTHER, or USED (no grades)
             "new": "NEW",
-            "like_new": "LIKE_NEW",
-            "excellent": "LIKE_NEW",
-            "very_good": "USED_VERY_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_ACCEPTABLE",
-            "acceptable": "USED_ACCEPTABLE",
+            "new_other": "NEW_OTHER",
+            "like_new": "USED",
+            "excellent": "USED",
+            "very_good": "USED",
+            "good": "USED",
+            "fair": "USED",
+            "acceptable": "USED",
+            "used": "USED",
         },
-        "default_condition": "USED_VERY_GOOD",
+        "default_condition": "USED",
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
