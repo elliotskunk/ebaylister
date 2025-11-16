@@ -223,7 +223,7 @@ def upload_and_create_listing():
                 description=ai_result["description"],
                 quantity=1,
                 image_urls=image_urls,  # Now supports multiple images
-                condition=ai_result.get("condition", "USED_GOOD"),
+                condition=ai_result.get("condition", "USED_EXCELLENT"),
                 aspects=ai_result.get("aspects"),
             )
 

@@ -41,7 +41,7 @@ def build_inventory_item_payload(
     description: str,
     quantity: int,
     image_urls: list[str],
-    condition: str = "USED_GOOD",
+    condition: str = "USED_EXCELLENT",
     brand: Optional[str] = None,
     mpn: Optional[str] = None,
     aspects: Optional[Dict[str, list[str]]] = None,

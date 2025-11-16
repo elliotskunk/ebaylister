@@ -80,11 +80,11 @@ CRITICAL SEO RULES FOR CASSINI:
    - Mention any flaws honestly
    - Include style/fit information
 
-4. CONDITION: Be accurate and honest
+4. CONDITION: Be accurate and honest (use these exact values)
    - NEW: Brand new with tags
    - USED_EXCELLENT: Like new, minimal wear
-   - USED_GOOD: Normal wear, good condition
-   - USED_ACCEPTABLE: Noticeable wear but functional
+   - USED_VERY_GOOD: Light wear, fully functional
+   - FOR_PARTS_OR_NOT_WORKING: Damaged or non-functional
 
 5. CATEGORY KEYWORDS: Help with categorization
    - Provide specific terms that identify the item category
@@ -239,11 +239,11 @@ CRITICAL SEO RULES FOR CASSINI:
    - Mention any flaws honestly (visible in any image)
    - Include style/fit information
 
-4. CONDITION: Be accurate based on ALL images
+4. CONDITION: Be accurate based on ALL images (use these exact values)
    - NEW: Brand new with tags
    - USED_EXCELLENT: Like new, minimal wear
-   - USED_GOOD: Normal wear, good condition
-   - USED_ACCEPTABLE: Noticeable wear but functional
+   - USED_VERY_GOOD: Light wear, fully functional
+   - FOR_PARTS_OR_NOT_WORKING: Damaged or non-functional
 
 5. CATEGORY KEYWORDS: Help with categorization
    - Provide specific terms that identify the item category
@@ -335,23 +335,30 @@ def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:
     except (ValueError, TypeError):
         price = 9.99
 
-    # Normalize condition
-    condition = str(data.get("condition", "USED_GOOD")).upper()
+    # Normalize condition - use universally accepted values
+    condition = str(data.get("condition", "USED_EXCELLENT")).upper().replace(" ", "_")
     valid_conditions = {
         "NEW", "NEW_WITH_TAGS", "NEW_WITHOUT_TAGS", "NEW_WITH_DEFECTS",
-        "USED_EXCELLENT", "USED_GOOD", "USED_ACCEPTABLE",
+        "USED_EXCELLENT", "USED_VERY_GOOD", "USED_GOOD", "USED_ACCEPTABLE",
         "FOR_PARTS_OR_NOT_WORKING", "REFURBISHED"
     }
+
+    # Map USED_GOOD to USED_VERY_GOOD as it's more universally accepted
+    if condition == "USED_GOOD":
+        condition = "USED_VERY_GOOD"
+    elif condition == "USED_ACCEPTABLE":
+        condition = "USED_VERY_GOOD"
+
     if condition not in valid_conditions:
         # Try to map common variations
         if "NEW" in condition:
             condition = "NEW"
         elif "EXCELLENT" in condition or "LIKE NEW" in condition:
             condition = "USED_EXCELLENT"
-        elif "GOOD" in condition:
-            condition = "USED_GOOD"
+        elif "GOOD" in condition or "VERY_GOOD" in condition:
+            condition = "USED_VERY_GOOD"
         else:
-            condition = "USED_GOOD"
+            condition = "USED_EXCELLENT"  # Safe default
 
     # Normalize aspects/item specifics
     aspects = data.get("aspects", {})
