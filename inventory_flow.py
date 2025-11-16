@@ -17,9 +17,22 @@ log = logging.getLogger(__name__)
 class EbayError(RuntimeError): pass
 
 def _headers(token: str) -> Dict[str, str]:
+    # Map marketplace IDs to Content-Language values
+    lang_map = {
+        "EBAY_GB": "en-GB",
+        "EBAY_US": "en-US",
+        "EBAY_AU": "en-AU",
+        "EBAY_DE": "de-DE",
+        "EBAY_FR": "fr-FR",
+        "EBAY_IT": "it-IT",
+        "EBAY_ES": "es-ES",
+    }
+    content_language = lang_map.get(MARKETPLACE_ID, "en-GB")
+
     return {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
+        "Content-Language": content_language,
     }
 
 def build_inventory_item_payload(
