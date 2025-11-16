@@ -338,7 +338,17 @@
                     sku: '{{ sku }}'
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // Response is not JSON (probably HTML error page)
+                    return response.text().then(text => {
+                        throw new Error(`Server returned non-JSON response. Status: ${response.status}. Check terminal for details.`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     statusDiv.className = 'status-message status-success';
