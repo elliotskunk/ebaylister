@@ -127,7 +127,7 @@ def build_offer_payload(sku: str, price_value: float, category_id: Optional[str]
 def create_or_replace_inventory_item(token: str, sku: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     url = f"{INV_BASE}/inventory_item/{requests.utils.quote(sku)}"
     r = requests.put(url, headers=_headers(token), data=json.dumps(payload))
-    if r.status_code not in (200, 201):
+    if r.status_code not in (200, 201, 204):
         log.error("Inventory item upsert failed %s: %s", r.status_code, r.text)
         raise EbayError(f"Inventory item failed: {r.text}")
     return r.json() if r.text else {"status": r.status_code}
