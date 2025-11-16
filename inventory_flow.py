@@ -95,6 +95,11 @@ def build_inventory_item_payload(
             product["brand"] = "Unbranded"
             product["mpn"] = "Does Not Apply"
 
+    # IMPORTANT: Department is REQUIRED for clothing categories
+    # Default to "Unisex Adults" unless specified
+    if "Department" not in validated_aspects:
+        validated_aspects["Department"] = ["Unisex Adults"]
+
     if validated_aspects:
         product["aspects"] = validated_aspects
 
