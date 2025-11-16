@@ -335,30 +335,49 @@ def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:
     except (ValueError, TypeError):
         price = 9.99
 
-    # Normalize condition - use universally accepted values
-    condition = str(data.get("condition", "USED_EXCELLENT")).upper().replace(" ", "_")
-    valid_conditions = {
-        "NEW", "NEW_WITH_TAGS", "NEW_WITHOUT_TAGS", "NEW_WITH_DEFECTS",
-        "USED_EXCELLENT", "USED_VERY_GOOD", "USED_GOOD", "USED_ACCEPTABLE",
-        "FOR_PARTS_OR_NOT_WORKING", "REFURBISHED"
+    # Normalize condition - use universally accepted values across all category types
+    # Collectibles/Memorabilia use: NEW, LIKE_NEW, VERY_GOOD, GOOD, ACCEPTABLE
+    # Clothing uses: USED_EXCELLENT, USED_VERY_GOOD, etc.
+    # Using simpler values for broader compatibility across category types
+    condition = str(data.get("condition", "VERY_GOOD")).upper().replace(" ", "_")
+
+    # Map to universally accepted condition values (these work for both clothing AND collectibles)
+    condition_mapping = {
+        # Direct mappings
+        "NEW": "NEW",
+        "LIKE_NEW": "LIKE_NEW",
+        "VERY_GOOD": "VERY_GOOD",
+        "GOOD": "GOOD",
+        "ACCEPTABLE": "ACCEPTABLE",
+
+        # Map USED_* to simpler versions that work across ALL categories
+        "USED_EXCELLENT": "LIKE_NEW",
+        "USED_VERY_GOOD": "VERY_GOOD",
+        "USED_GOOD": "GOOD",
+        "USED_ACCEPTABLE": "ACCEPTABLE",
+
+        # Other mappings
+        "NEW_WITH_TAGS": "NEW",
+        "NEW_WITHOUT_TAGS": "NEW",
+        "FOR_PARTS_OR_NOT_WORKING": "FOR_PARTS_OR_NOT_WORKING",
     }
 
-    # Map USED_GOOD to USED_VERY_GOOD as it's more universally accepted
-    if condition == "USED_GOOD":
-        condition = "USED_VERY_GOOD"
-    elif condition == "USED_ACCEPTABLE":
-        condition = "USED_VERY_GOOD"
-
-    if condition not in valid_conditions:
-        # Try to map common variations
+    if condition in condition_mapping:
+        condition = condition_mapping[condition]
+    else:
+        # Try to infer from keywords
         if "NEW" in condition:
             condition = "NEW"
-        elif "EXCELLENT" in condition or "LIKE NEW" in condition:
-            condition = "USED_EXCELLENT"
-        elif "GOOD" in condition or "VERY_GOOD" in condition:
-            condition = "USED_VERY_GOOD"
+        elif "EXCELLENT" in condition or "LIKE" in condition:
+            condition = "LIKE_NEW"
+        elif "VERY" in condition and "GOOD" in condition:
+            condition = "VERY_GOOD"
+        elif "GOOD" in condition:
+            condition = "GOOD"
+        elif "ACCEPTABLE" in condition:
+            condition = "ACCEPTABLE"
         else:
-            condition = "USED_EXCELLENT"  # Safe default
+            condition = "VERY_GOOD"  # Safe default for most categories
 
     # Normalize aspects/item specifics
     aspects = data.get("aspects", {})
