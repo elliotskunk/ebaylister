@@ -54,17 +54,21 @@ def build_inventory_item_payload(
         "imageUrls": image_urls,
     }
 
-    # Add brand if provided
+    # Add brand if provided - must also include MPN
     if brand:
         product["brand"] = brand
+        # MPN is required when brand is present - use provided value or "Does Not Apply"
+        product["mpn"] = mpn if mpn else "Does Not Apply"
     # Extract brand from aspects if available
     elif aspects and "Brand" in aspects:
         brand_values = aspects.get("Brand", [])
-        if brand_values:
+        if brand_values and brand_values[0]:
             product["brand"] = brand_values[0]
+            # MPN is required when brand is present
+            product["mpn"] = mpn if mpn else "Does Not Apply"
 
-    # Add MPN if provided
-    if mpn:
+    # Add MPN if provided separately (and brand was already set)
+    if mpn and "mpn" not in product:
         product["mpn"] = mpn
 
     # Add aspects (item specifics)
