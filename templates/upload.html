@@ -528,10 +528,25 @@
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    redirect: 'follow'
                 });
 
                 clearInterval(loadingInterval);
+
+                // Check if we were redirected to preview page (success case)
+                if (response.redirected || response.url.includes('/preview')) {
+                    // Redirect the browser to the preview page
+                    window.location.href = response.url;
+                    return;
+                }
+
+                // Check content type - if HTML, something went wrong
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned unexpected response. Check terminal for details.');
+                }
+
                 const data = await response.json();
 
                 loading.style.display = 'none';
