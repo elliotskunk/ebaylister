@@ -335,49 +335,50 @@ def _normalize_ai_response(data: Dict[str, Any]) -> Dict[str, Any]:
     except (ValueError, TypeError):
         price = 9.99
 
-    # Normalize condition - use universally accepted values across all category types
-    # Collectibles/Memorabilia use: NEW, LIKE_NEW, VERY_GOOD, GOOD, ACCEPTABLE
-    # Clothing uses: USED_EXCELLENT, USED_VERY_GOOD, etc.
-    # Using simpler values for broader compatibility across category types
-    condition = str(data.get("condition", "VERY_GOOD")).upper().replace(" ", "_")
+    # Normalize condition - use VALID eBay ConditionEnum values
+    # See: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ConditionEnum
+    # Valid enums: NEW, LIKE_NEW, USED_EXCELLENT, USED_VERY_GOOD, USED_GOOD, USED_ACCEPTABLE, etc.
+    # IMPORTANT: There is NO plain "VERY_GOOD" or "GOOD" enum - those are INVALID!
+    # The UI displays "Very Good" but the API enum is "USED_VERY_GOOD"
+    condition = str(data.get("condition", "USED_VERY_GOOD")).upper().replace(" ", "_")
 
-    # Map to universally accepted condition values (these work for both clothing AND collectibles)
-    condition_mapping = {
-        # Direct mappings
-        "NEW": "NEW",
-        "LIKE_NEW": "LIKE_NEW",
-        "VERY_GOOD": "VERY_GOOD",
-        "GOOD": "GOOD",
-        "ACCEPTABLE": "ACCEPTABLE",
-
-        # Map USED_* to simpler versions that work across ALL categories
-        "USED_EXCELLENT": "LIKE_NEW",
-        "USED_VERY_GOOD": "VERY_GOOD",
-        "USED_GOOD": "GOOD",
-        "USED_ACCEPTABLE": "ACCEPTABLE",
-
-        # Other mappings
-        "NEW_WITH_TAGS": "NEW",
-        "NEW_WITHOUT_TAGS": "NEW",
-        "FOR_PARTS_OR_NOT_WORKING": "FOR_PARTS_OR_NOT_WORKING",
+    # Valid eBay ConditionEnum values per official documentation
+    valid_conditions = {
+        "NEW", "LIKE_NEW", "NEW_OTHER", "NEW_WITH_DEFECTS",
+        "CERTIFIED_REFURBISHED", "EXCELLENT_REFURBISHED", "VERY_GOOD_REFURBISHED", "GOOD_REFURBISHED",
+        "SELLER_REFURBISHED", "USED_EXCELLENT", "USED_VERY_GOOD", "USED_GOOD", "USED_ACCEPTABLE",
+        "PRE_OWNED_EXCELLENT", "PRE_OWNED_FAIR", "FOR_PARTS_OR_NOT_WORKING"
     }
 
-    if condition in condition_mapping:
-        condition = condition_mapping[condition]
-    else:
+    # Map INVALID values to VALID eBay enum values
+    invalid_to_valid = {
+        "VERY_GOOD": "USED_VERY_GOOD",  # INVALID! Must use USED_VERY_GOOD
+        "GOOD": "USED_GOOD",  # INVALID! Must use USED_GOOD
+        "ACCEPTABLE": "USED_ACCEPTABLE",  # INVALID! Must use USED_ACCEPTABLE
+        "EXCELLENT": "USED_EXCELLENT",
+        "FAIR": "PRE_OWNED_FAIR",
+        "NEW_WITH_TAGS": "NEW",
+        "NEW_WITHOUT_TAGS": "NEW",
+    }
+
+    if condition in invalid_to_valid:
+        condition = invalid_to_valid[condition]
+    elif condition not in valid_conditions:
         # Try to infer from keywords
         if "NEW" in condition:
             condition = "NEW"
-        elif "EXCELLENT" in condition or "LIKE" in condition:
+        elif "LIKE" in condition and "NEW" in condition:
             condition = "LIKE_NEW"
+        elif "EXCELLENT" in condition:
+            condition = "USED_EXCELLENT"
         elif "VERY" in condition and "GOOD" in condition:
-            condition = "VERY_GOOD"
+            condition = "USED_VERY_GOOD"
         elif "GOOD" in condition:
-            condition = "GOOD"
-        elif "ACCEPTABLE" in condition:
-            condition = "ACCEPTABLE"
+            condition = "USED_GOOD"
+        elif "ACCEPTABLE" in condition or "FAIR" in condition:
+            condition = "USED_ACCEPTABLE"
         else:
-            condition = "VERY_GOOD"  # Safe default for most categories
+            condition = "USED_VERY_GOOD"  # Safe default - widely supported
 
     # Normalize aspects/item specifics
     aspects = data.get("aspects", {})

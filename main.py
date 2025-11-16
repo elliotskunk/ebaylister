@@ -223,7 +223,7 @@ def upload_and_create_listing():
                 description=ai_result["description"],
                 quantity=1,
                 image_urls=image_urls,  # Now supports multiple images
-                condition=ai_result.get("condition", "VERY_GOOD"),
+                condition=ai_result.get("condition", "USED_VERY_GOOD"),
                 aspects=ai_result.get("aspects"),
             )
 
@@ -263,7 +263,7 @@ def upload_and_create_listing():
             "category_id": category_id,
             "category_name": ai_result.get("category_keywords", ["General"])[0] if ai_result.get("category_keywords") else "General",
             "image_urls": image_urls,
-            "condition": ai_result.get("condition", "USED_GOOD"),
+            "condition": ai_result.get("condition", "USED_VERY_GOOD"),
             "quantity": 1,
             "marketplace": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB"),
             "aspects": ai_result.get("aspects", {}),
