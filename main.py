@@ -6,7 +6,7 @@ import os
 import json
 import logging
 from io import BytesIO
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from dotenv import load_dotenv
 from PIL import Image
 
@@ -251,30 +251,88 @@ def upload_and_create_listing():
             log.error(f"Failed to create offer: {e}")
             return jsonify({"error": f"Failed to create offer: {e}"}), 502
 
-        # 10. Return success response
-        return jsonify({
-            "success": True,
-            "message": "Draft listing created successfully!",
+        # 10. Store listing data in session for preview
+        session['pending_listing'] = {
             "sku": sku,
             "offer_id": offer_id,
             "title": title,
+            "description": ai_result["description"],
             "price": price,
+            "currency": "GBP",
             "category_id": category_id,
+            "category_name": ai_result.get("category_keywords", ["General"])[0] if ai_result.get("category_keywords") else "General",
             "image_urls": image_urls,
-            "image_count": len(image_urls),
             "condition": ai_result.get("condition", "USED_GOOD"),
-            "ai_analysis": {
-                "title": ai_result["title"],
-                "description": ai_result["description"][:200] + "...",
-                "aspects": ai_result.get("aspects", {}),
-                "suggested_price": ai_result["price"],
-            },
-            "note": "This is a DRAFT listing. It will not be published automatically." if FORCE_DRAFTS else "Listing created as draft."
-        }), 201
+            "quantity": 1,
+            "marketplace": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB"),
+            "aspects": ai_result.get("aspects", {}),
+            "brand": ai_result.get("aspects", {}).get("Brand", [""])[0] if ai_result.get("aspects", {}).get("Brand") else "",
+        }
+
+        log.info(f"Redirecting to preview page for offer: {offer_id}")
+
+        # Redirect to preview page
+        return redirect(url_for('preview_listing'))
 
     except Exception as e:
         log.exception("Unexpected error in upload_and_create_listing")
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
+@app.route("/preview")
+def preview_listing():
+    """Show preview of listing before publishing"""
+    listing_data = session.get('pending_listing')
+    if not listing_data:
+        return redirect(url_for('index'))
+
+    return render_template('preview.html', **listing_data)
+
+
+@app.route("/publish", methods=["POST"])
+def publish_listing():
+    """Publish the pending listing to eBay"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        offer_id = data.get('offer_id')
+        if not offer_id:
+            return jsonify({"error": "No offer_id provided"}), 400
+
+        # Get token and publish
+        token = get_oauth_token()
+        result = publish_offer(token, offer_id)
+
+        listing_id = result.get("listingId")
+
+        # Generate eBay listing URL
+        marketplace = os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB")
+        if marketplace == "EBAY_GB":
+            listing_url = f"https://www.ebay.co.uk/itm/{listing_id}"
+        elif marketplace == "EBAY_US":
+            listing_url = f"https://www.ebay.com/itm/{listing_id}"
+        else:
+            listing_url = f"https://www.ebay.com/itm/{listing_id}"
+
+        # Clear the pending listing from session
+        session.pop('pending_listing', None)
+
+        log.info(f"✅ Listing published successfully! ID: {listing_id}")
+
+        return jsonify({
+            "success": True,
+            "listing_id": listing_id,
+            "listing_url": listing_url,
+        })
+
+    except EbayError as e:
+        log.error(f"Failed to publish listing: {e}")
+        return jsonify({"error": str(e)}), 502
+    except Exception as e:
+        log.exception("Error publishing listing")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/create", methods=["POST"])

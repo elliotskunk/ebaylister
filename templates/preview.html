@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Listing - eBay Lister</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #0064d2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .header p {
+            opacity: 0.9;
+        }
+        .warning-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .listing-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        @media (max-width: 768px) {
+            .listing-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+        .images-section {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .main-image {
+            width: 100%;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        .thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .thumbnail:hover, .thumbnail.active {
+            border-color: #0064d2;
+        }
+        .details-section h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e53238;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            width: 140px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+        .description-section {
+            padding: 30px;
+            border-top: 1px solid #eee;
+        }
+        .description-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .description-content {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .aspects-section {
+            padding: 0 30px 30px;
+        }
+        .aspects-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .aspects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .aspect-item {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .aspect-key {
+            font-weight: 600;
+            color: #555;
+        }
+        .aspect-value {
+            color: #333;
+        }
+        .action-buttons {
+            padding: 30px;
+            background: #f9f9f9;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-publish {
+            background: #00a651;
+            color: white;
+        }
+        .btn-publish:hover {
+            background: #008c44;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,166,81,0.4);
+        }
+        .btn-edit {
+            background: #0064d2;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #0054b3;
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 30px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .sku-info {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Preview Your Listing</h1>
+            <p>Review all details before publishing to eBay</p>
+        </div>
+
+        <div class="warning-banner">
+            This listing will go LIVE on eBay once published. Buyers will be able to purchase immediately.
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="listing-preview">
+            <div class="images-section">
+                <img id="mainImage" class="main-image" src="{{ image_urls[0] }}" alt="Product image">
+                {% if image_urls|length > 1 %}
+                <div class="thumbnail-grid">
+                    {% for url in image_urls %}
+                    <img class="thumbnail {% if loop.first %}active{% endif %}" src="{{ url }}" alt="Thumbnail {{ loop.index }}" onclick="selectImage(this, '{{ url }}')">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="details-section">
+                <h2>{{ title }}</h2>
+                <div class="price">{{ currency }} {{ "%.2f"|format(price) }}</div>
+
+                <div class="info-row">
+                    <span class="info-label">Condition:</span>
+                    <span class="info-value">{{ condition }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value">{{ category_name }} (ID: {{ category_id }})</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Quantity:</span>
+                    <span class="info-value">{{ quantity }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Format:</span>
+                    <span class="info-value">Fixed Price (Buy It Now)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Marketplace:</span>
+                    <span class="info-value">{{ marketplace }}</span>
+                </div>
+                {% if brand %}
+                <div class="info-row">
+                    <span class="info-label">Brand:</span>
+                    <span class="info-value">{{ brand }}</span>
+                </div>
+                {% endif %}
+
+                <div class="sku-info">SKU: {{ sku }} | Offer ID: {{ offer_id }}</div>
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3>Item Description</h3>
+            <div class="description-content">{{ description }}</div>
+        </div>
+
+        {% if aspects %}
+        <div class="aspects-section">
+            <h3>Item Specifics</h3>
+            <div class="aspects-grid">
+                {% for key, values in aspects.items() %}
+                <div class="aspect-item">
+                    <span class="aspect-key">{{ key }}:</span>
+                    <span class="aspect-value">{{ values|join(', ') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="action-buttons">
+            <button id="publishBtn" class="btn btn-publish" onclick="publishListing()">
+                Publish to eBay
+            </button>
+            <button class="btn btn-cancel" onclick="window.location.href='/'">
+                Cancel & Start Over
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function selectImage(thumb, url) {
+            document.getElementById('mainImage').src = url;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+
+        function publishListing() {
+            const btn = document.getElementById('publishBtn');
+            const statusDiv = document.getElementById('statusMessage');
+
+            btn.disabled = true;
+            btn.textContent = 'Publishing...';
+            statusDiv.style.display = 'none';
+
+            fetch('/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    offer_id: '{{ offer_id }}',
+                    sku: '{{ sku }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.className = 'status-message status-success';
+                    statusDiv.innerHTML = `
+                        <strong>Successfully Published!</strong><br>
+                        Your listing is now LIVE on eBay.<br>
+                        Listing ID: ${data.listing_id}<br>
+                        <a href="${data.listing_url}" target="_blank" style="color: #155724; font-weight: bold;">View on eBay</a>
+                    `;
+                    statusDiv.style.display = 'block';
+                    btn.textContent = 'Published!';
+                    btn.style.background = '#28a745';
+                } else {
+                    throw new Error(data.error || 'Publishing failed');
+                }
+            })
+            .catch(error => {
+                statusDiv.className = 'status-message status-error';
+                statusDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                statusDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Publish to eBay';
+            });
+        }
+    </script>
+</body>
+</html>

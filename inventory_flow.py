@@ -141,8 +141,6 @@ def create_offer(token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     return r.json()
 
 def publish_offer(token: str, offer_id: str) -> Dict[str, Any]:
-    if FORCE_DRAFTS:
-        raise EbayError("Publishing disabled (FORCE_DRAFTS=true). Set to false to allow.")
     url = f"{INV_BASE}/offer/{offer_id}/publish"
     r = requests.post(url, headers=_headers(token))
     if r.status_code not in (200, 201):
