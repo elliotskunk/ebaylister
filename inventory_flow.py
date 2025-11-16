@@ -41,6 +41,7 @@ def build_inventory_item_payload(
     description: str,
     quantity: int,
     image_urls: list[str],
+    condition: str = "USED_GOOD",
     brand: Optional[str] = None,
     mpn: Optional[str] = None,
     aspects: Optional[Dict[str, list[str]]] = None,
@@ -91,6 +92,7 @@ def build_inventory_item_payload(
 
     return {
         "sku": sku,
+        "condition": condition,
         "product": product,
         "availability": {
             "shipToLocationAvailability": {"quantity": max(0, int(quantity))}
