@@ -29,18 +29,19 @@ ITEM_TYPE_RULES = {
         "name": "Kitchenware/Crockery",
         "default_category_id": "20693",  # Mugs category
         "condition_mapping": {
-            # Try USED_GOOD as it's a valid ConditionEnum
+            # USED_EXCELLENT = Condition ID 3000 = basic "Used"
+            # This is the standard "Used" condition for most categories
             "new": "NEW",
             "new_other": "NEW_OTHER",
-            "like_new": "USED_GOOD",
-            "excellent": "USED_GOOD",
-            "very_good": "USED_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_GOOD",
-            "acceptable": "USED_GOOD",
-            "used": "USED_GOOD",
+            "like_new": "USED_EXCELLENT",
+            "excellent": "USED_EXCELLENT",
+            "very_good": "USED_EXCELLENT",
+            "good": "USED_EXCELLENT",
+            "fair": "USED_EXCELLENT",
+            "acceptable": "USED_EXCELLENT",
+            "used": "USED_EXCELLENT",
         },
-        "default_condition": "USED_GOOD",
+        "default_condition": "USED_EXCELLENT",  # Condition ID 3000 = "Used"
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
