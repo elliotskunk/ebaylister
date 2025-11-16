@@ -45,7 +45,7 @@ ITEM_TYPE_RULES = {
         "default_aspects": {
             "Brand": "Unbranded",
         },
-        "single_value_aspects": ["Colour"],
+        "single_value_aspects": ["Colour", "Style"],
     },
     "shoes": {
         "name": "Shoes",
