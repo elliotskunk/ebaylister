@@ -346,20 +346,22 @@ def publish_listing():
         # Get token
         token = get_oauth_token()
 
-        # Check if anything was changed (images, title, description)
+        # Check if anything was changed (images, title, description, aspects)
         new_image_urls = data.get('image_urls')
         new_title = data.get('title')
         new_description = data.get('description')
+        new_aspects = data.get('aspects')
         pending_listing = session.get('pending_listing', {})
 
         # Determine what changed
         images_changed = new_image_urls and new_image_urls != pending_listing.get('image_urls')
         title_changed = new_title and new_title != pending_listing.get('title')
         description_changed = new_description and new_description != pending_listing.get('description')
+        aspects_changed = new_aspects and new_aspects != pending_listing.get('aspects')
 
-        if images_changed or title_changed or description_changed:
+        if images_changed or title_changed or description_changed or aspects_changed:
             # Need to update inventory item with changes
-            log.info(f"Changes detected - Images: {images_changed}, Title: {title_changed}, Description: {description_changed}")
+            log.info(f"Changes detected - Images: {images_changed}, Title: {title_changed}, Description: {description_changed}, Aspects: {aspects_changed}")
             sku = pending_listing.get('sku')
 
             if sku:
@@ -367,6 +369,7 @@ def publish_listing():
                 final_image_urls = new_image_urls if new_image_urls else pending_listing.get('image_urls', [])
                 final_title = new_title if new_title else pending_listing.get('title', '')
                 final_description = new_description if new_description else pending_listing.get('description', '')
+                final_aspects = new_aspects if new_aspects else pending_listing.get('aspects', {})
 
                 # Rebuild and update the inventory item
                 inv_payload = build_inventory_item_payload(
@@ -376,7 +379,7 @@ def publish_listing():
                     quantity=pending_listing.get('quantity', 1),
                     image_urls=final_image_urls,
                     condition=pending_listing.get('condition', 'USED_EXCELLENT'),
-                    aspects=pending_listing.get('aspects', {}),
+                    aspects=final_aspects,
                 )
                 create_or_replace_inventory_item(token, sku, inv_payload)
                 log.info(f"Inventory item updated with changes")
@@ -388,6 +391,8 @@ def publish_listing():
                     session['pending_listing']['title'] = new_title
                 if description_changed:
                     session['pending_listing']['description'] = new_description
+                if aspects_changed:
+                    session['pending_listing']['aspects'] = new_aspects
                 session.modified = True
 
         # Publish the offer

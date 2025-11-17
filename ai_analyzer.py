@@ -120,10 +120,20 @@ Return ONLY valid JSON with this exact structure:
     "Fit": ["Fit Type"],
     "Era": ["Decade/Era"],
     "Country/Region of Manufacture": ["Country"],
-    "Features": ["Feature1", "Feature2"]
+    "Features": ["Feature1", "Feature2"],
+    "Theme": ["Theme if applicable"],
+    "Pattern": ["Pattern type"],
+    "Character": ["Character/Brand Partnership if any"],
+    "Occasion": ["When to use/wear"],
+    "Care Instructions": ["Washing/cleaning instructions"],
+    "Number in Pack": ["1"],
+    "Personalised": ["No"],
+    "Vintage": ["Yes or No"]
   },
   "category_keywords": "specific category identifying terms"
-}"""
+}
+
+IMPORTANT: Fill in as MANY aspects as possible from what you can see. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly."""
 
         user_prompt = "Analyze this item and create an eBay listing optimized for Cassini SEO. Return only the JSON response."
 
@@ -294,10 +304,20 @@ Return ONLY valid JSON with this exact structure:
     "Fit": ["Fit Type"],
     "Era": ["Decade/Era"],
     "Country/Region of Manufacture": ["Country"],
-    "Features": ["Feature1", "Feature2"]
+    "Features": ["Feature1", "Feature2"],
+    "Theme": ["Theme if applicable"],
+    "Pattern": ["Pattern type"],
+    "Character": ["Character/Brand Partnership if any"],
+    "Occasion": ["When to use/wear"],
+    "Care Instructions": ["Washing/cleaning instructions"],
+    "Number in Pack": ["1"],
+    "Personalised": ["No"],
+    "Vintage": ["Yes or No"]
   },
   "category_keywords": "specific category identifying terms"
-}"""
+}
+
+IMPORTANT: Fill in as MANY aspects as possible from what you can see in ALL images. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly."""
 
         messages = [
             {"role": "system", "content": system_prompt},

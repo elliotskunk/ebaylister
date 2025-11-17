@@ -182,6 +182,57 @@
         .edit-actions {
             margin-top: 10px;
         }
+        .aspect-edit-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .aspect-edit-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .aspect-key-input {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .aspect-value-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .remove-aspect-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .remove-aspect-btn:hover {
+            background: #c82333;
+        }
+        .add-aspect-btn {
+            background: #0064d2;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .add-aspect-btn:hover {
+            background: #0054b3;
+        }
         .details-section h2 {
             color: #333;
             font-size: 22px;
@@ -418,14 +469,32 @@
 
         {% if aspects %}
         <div class="aspects-section">
-            <h3>Item Specifics</h3>
-            <div class="aspects-grid">
-                {% for key, values in aspects.items() %}
-                <div class="aspect-item">
-                    <span class="aspect-key">{{ key }}:</span>
-                    <span class="aspect-value">{{ values|join(', ') }}</span>
+            <h3>Item Specifics <button class="edit-btn" onclick="editAspects()">Edit</button></h3>
+            <div id="aspectsDisplay">
+                <div class="aspects-grid">
+                    {% for key, values in aspects.items() %}
+                    <div class="aspect-item">
+                        <span class="aspect-key">{{ key }}:</span>
+                        <span class="aspect-value">{{ values|join(', ') }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+            </div>
+            <div id="aspectsEdit" style="display: none;">
+                <div class="aspect-edit-grid" id="aspectEditGrid">
+                    {% for key, values in aspects.items() %}
+                    <div class="aspect-edit-row">
+                        <input type="text" class="aspect-key-input" value="{{ key }}" placeholder="Aspect Name">
+                        <input type="text" class="aspect-value-input" value="{{ values|join(', ') }}" placeholder="Value(s) - comma separated">
+                        <button class="remove-aspect-btn" onclick="removeAspect(this)">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="add-aspect-btn" onclick="addAspect()">+ Add Aspect</button>
+                <div class="edit-actions">
+                    <button class="save-edit-btn" onclick="saveAspects()">Save</button>
+                    <button class="cancel-edit-btn" onclick="cancelAspectsEdit()">Cancel</button>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -450,6 +519,10 @@
         let currentDescription = {{ description | tojson }};
         let originalTitle = currentTitle;
         let originalDescription = currentDescription;
+
+        // Aspects tracking
+        let currentAspects = {{ aspects | tojson }};
+        let originalAspects = JSON.parse(JSON.stringify(currentAspects));
 
         function selectImage(thumb, url) {
             document.getElementById('mainImage').src = url;
@@ -512,6 +585,86 @@
             document.getElementById('descriptionInput').value = currentDescription;
             document.getElementById('descriptionDisplay').style.display = 'block';
             document.getElementById('descriptionEdit').style.display = 'none';
+        }
+
+        // Aspects editing functions
+        function editAspects() {
+            document.getElementById('aspectsDisplay').style.display = 'none';
+            document.getElementById('aspectsEdit').style.display = 'block';
+        }
+
+        function addAspect() {
+            const grid = document.getElementById('aspectEditGrid');
+            const newRow = document.createElement('div');
+            newRow.className = 'aspect-edit-row';
+            newRow.innerHTML = `
+                <input type="text" class="aspect-key-input" value="" placeholder="Aspect Name">
+                <input type="text" class="aspect-value-input" value="" placeholder="Value(s) - comma separated">
+                <button class="remove-aspect-btn" onclick="removeAspect(this)">×</button>
+            `;
+            grid.appendChild(newRow);
+        }
+
+        function removeAspect(button) {
+            button.parentElement.remove();
+        }
+
+        function saveAspects() {
+            const grid = document.getElementById('aspectEditGrid');
+            const rows = grid.querySelectorAll('.aspect-edit-row');
+            const newAspects = {};
+
+            rows.forEach(row => {
+                const keyInput = row.querySelector('.aspect-key-input');
+                const valueInput = row.querySelector('.aspect-value-input');
+                const key = keyInput.value.trim();
+                const value = valueInput.value.trim();
+
+                if (key && value) {
+                    // Split by comma for multiple values, trim each
+                    const values = value.split(',').map(v => v.trim()).filter(v => v);
+                    if (values.length > 0) {
+                        newAspects[key] = values;
+                    }
+                }
+            });
+
+            currentAspects = newAspects;
+
+            // Update the display
+            const displayGrid = document.querySelector('#aspectsDisplay .aspects-grid');
+            displayGrid.innerHTML = '';
+            for (const [key, values] of Object.entries(newAspects)) {
+                const item = document.createElement('div');
+                item.className = 'aspect-item';
+                item.innerHTML = `
+                    <span class="aspect-key">${key}:</span>
+                    <span class="aspect-value">${values.join(', ')}</span>
+                `;
+                displayGrid.appendChild(item);
+            }
+
+            document.getElementById('aspectsDisplay').style.display = 'block';
+            document.getElementById('aspectsEdit').style.display = 'none';
+        }
+
+        function cancelAspectsEdit() {
+            // Restore original edit fields
+            const grid = document.getElementById('aspectEditGrid');
+            grid.innerHTML = '';
+            for (const [key, values] of Object.entries(currentAspects)) {
+                const row = document.createElement('div');
+                row.className = 'aspect-edit-row';
+                row.innerHTML = `
+                    <input type="text" class="aspect-key-input" value="${key}" placeholder="Aspect Name">
+                    <input type="text" class="aspect-value-input" value="${values.join(', ')}" placeholder="Value(s) - comma separated">
+                    <button class="remove-aspect-btn" onclick="removeAspect(this)">×</button>
+                `;
+                grid.appendChild(row);
+            }
+
+            document.getElementById('aspectsDisplay').style.display = 'block';
+            document.getElementById('aspectsEdit').style.display = 'none';
         }
 
         // Add event listener for title character count
@@ -658,7 +811,8 @@
                     sku: '{{ sku }}',
                     image_urls: imageOrder,
                     title: currentTitle,
-                    description: currentDescription
+                    description: currentDescription,
+                    aspects: currentAspects
                 })
             })
             .then(response => {
