@@ -116,6 +116,72 @@
             margin-top: 10px;
             text-align: center;
         }
+        .editable-field {
+            position: relative;
+        }
+        .edit-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+        .edit-btn:hover {
+            background: #e0e0e0;
+        }
+        .title-input {
+            width: 100%;
+            font-size: 22px;
+            padding: 10px;
+            border: 2px solid #0064d2;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .title-char-count {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .title-char-count.warning {
+            color: #e53238;
+        }
+        .description-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #0064d2;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        .save-edit-btn {
+            background: #00a651;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .cancel-edit-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .edit-actions {
+            margin-top: 10px;
+        }
         .details-section h2 {
             color: #333;
             font-size: 22px;
@@ -285,7 +351,20 @@
             </div>
 
             <div class="details-section">
-                <h2>{{ title }}</h2>
+                <div class="editable-field">
+                    <div id="titleDisplay">
+                        <h2 style="display: inline;">{{ title }}</h2>
+                        <button class="edit-btn" onclick="editTitle()">Edit</button>
+                    </div>
+                    <div id="titleEdit" style="display: none;">
+                        <input type="text" id="titleInput" class="title-input" maxlength="80" value="{{ title }}">
+                        <div id="titleCharCount" class="title-char-count">{{ title|length }}/80 characters</div>
+                        <div class="edit-actions">
+                            <button class="save-edit-btn" onclick="saveTitle()">Save</button>
+                            <button class="cancel-edit-btn" onclick="cancelTitleEdit()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="price">{{ currency }} {{ "%.2f"|format(price) }}</div>
 
                 <div class="info-row">
@@ -324,8 +403,17 @@
         </div>
 
         <div class="description-section">
-            <h3>Item Description</h3>
-            <div class="description-content">{{ description }}</div>
+            <h3>Item Description <button class="edit-btn" onclick="editDescription()">Edit</button></h3>
+            <div id="descriptionDisplay">
+                <div class="description-content">{{ description }}</div>
+            </div>
+            <div id="descriptionEdit" style="display: none;">
+                <textarea id="descriptionInput" class="description-textarea">{{ description }}</textarea>
+                <div class="edit-actions">
+                    <button class="save-edit-btn" onclick="saveDescription()">Save</button>
+                    <button class="cancel-edit-btn" onclick="cancelDescriptionEdit()">Cancel</button>
+                </div>
+            </div>
         </div>
 
         {% if aspects %}
@@ -357,11 +445,82 @@
         let imageOrder = {{ image_urls | tojson }};
         let draggedItem = null;
 
+        // Title and description tracking
+        let currentTitle = {{ title | tojson }};
+        let currentDescription = {{ description | tojson }};
+        let originalTitle = currentTitle;
+        let originalDescription = currentDescription;
+
         function selectImage(thumb, url) {
             document.getElementById('mainImage').src = url;
             document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
         }
+
+        // Title editing functions
+        function editTitle() {
+            document.getElementById('titleDisplay').style.display = 'none';
+            document.getElementById('titleEdit').style.display = 'block';
+            document.getElementById('titleInput').focus();
+            updateTitleCharCount();
+        }
+
+        function saveTitle() {
+            const newTitle = document.getElementById('titleInput').value.trim();
+            if (newTitle && newTitle.length <= 80) {
+                currentTitle = newTitle;
+                document.querySelector('#titleDisplay h2').textContent = newTitle;
+                document.getElementById('titleDisplay').style.display = 'block';
+                document.getElementById('titleEdit').style.display = 'none';
+            }
+        }
+
+        function cancelTitleEdit() {
+            document.getElementById('titleInput').value = currentTitle;
+            document.getElementById('titleDisplay').style.display = 'block';
+            document.getElementById('titleEdit').style.display = 'none';
+        }
+
+        function updateTitleCharCount() {
+            const input = document.getElementById('titleInput');
+            const count = input.value.length;
+            const countDiv = document.getElementById('titleCharCount');
+            countDiv.textContent = `${count}/80 characters`;
+            if (count > 80) {
+                countDiv.classList.add('warning');
+            } else {
+                countDiv.classList.remove('warning');
+            }
+        }
+
+        // Description editing functions
+        function editDescription() {
+            document.getElementById('descriptionDisplay').style.display = 'none';
+            document.getElementById('descriptionEdit').style.display = 'block';
+            document.getElementById('descriptionInput').focus();
+        }
+
+        function saveDescription() {
+            const newDescription = document.getElementById('descriptionInput').value;
+            currentDescription = newDescription;
+            document.querySelector('#descriptionDisplay .description-content').textContent = newDescription;
+            document.getElementById('descriptionDisplay').style.display = 'block';
+            document.getElementById('descriptionEdit').style.display = 'none';
+        }
+
+        function cancelDescriptionEdit() {
+            document.getElementById('descriptionInput').value = currentDescription;
+            document.getElementById('descriptionDisplay').style.display = 'block';
+            document.getElementById('descriptionEdit').style.display = 'none';
+        }
+
+        // Add event listener for title character count
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = document.getElementById('titleInput');
+            if (titleInput) {
+                titleInput.addEventListener('input', updateTitleCharCount);
+            }
+        });
 
         // Drag and drop functionality
         function initDragAndDrop() {
@@ -497,7 +656,9 @@
                 body: JSON.stringify({
                     offer_id: '{{ offer_id }}',
                     sku: '{{ sku }}',
-                    image_urls: imageOrder
+                    image_urls: imageOrder,
+                    title: currentTitle,
+                    description: currentDescription
                 })
             })
             .then(response => {
