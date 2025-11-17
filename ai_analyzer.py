@@ -73,6 +73,12 @@ CRITICAL SEO RULES FOR CASSINI:
    - Provide as many accurate specifics as possible
    - Use eBay's standard aspect names (Brand, Size, Color, Material, Style, etc.)
    - Be specific and detailed
+   - BRAND DETECTION: Look for designer/brand names mentioned anywhere (labels, tags, patterns, title text)
+     * Designer names like "Orla Kiely", "Emma Bridgewater", "Cath Kidston" ARE brands
+     * If you see "Orla Kiely Style" - the brand IS "Orla Kiely" (ignore "Style" suffix)
+     * Only use "Unbranded" if absolutely no brand/designer is identifiable
+     * Common kitchenware brands: Orla Kiely, Emma Bridgewater, Denby, Royal Doulton, Wedgwood
+     * Common clothing brands: Levi's, Nike, Adidas, Ralph Lauren, Zara, H&M
 
 3. DESCRIPTION: Should be detailed and keyword-rich
    - Include measurements, condition details, material composition
@@ -241,6 +247,12 @@ CRITICAL SEO RULES FOR CASSINI:
    - Provide as many accurate specifics as possible from ALL images
    - Use eBay's standard aspect names (Brand, Size, Color, Material, Style, etc.)
    - Be specific and detailed - check all images for tags/labels
+   - BRAND DETECTION: Look for designer/brand names mentioned anywhere (labels, tags, patterns, title text)
+     * Designer names like "Orla Kiely", "Emma Bridgewater", "Cath Kidston" ARE brands
+     * If you see "Orla Kiely Style" - the brand IS "Orla Kiely" (ignore "Style" suffix)
+     * Only use "Unbranded" if absolutely no brand/designer is identifiable
+     * Common kitchenware brands: Orla Kiely, Emma Bridgewater, Denby, Royal Doulton, Wedgwood
+     * Common clothing brands: Levi's, Nike, Adidas, Ralph Lauren, Zara, H&M
 
 3. DESCRIPTION: Should be detailed and keyword-rich
    - Include measurements, condition details, material composition

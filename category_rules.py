@@ -27,7 +27,7 @@ ITEM_TYPE_RULES = {
     },
     "kitchenware": {
         "name": "Kitchenware/Crockery",
-        "default_category_id": "20693",  # Mugs category
+        "default_category_id": "20696",  # Mugs category (NOT 20693 which is cutlery!)
         "condition_mapping": {
             # USED_EXCELLENT = Condition ID 3000 = basic "Used"
             # This is the standard "Used" condition for most categories
