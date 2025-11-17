@@ -307,6 +307,30 @@ def preview_listing():
     return render_template('preview.html', **listing_data)
 
 
+@app.route("/update-image-order", methods=["POST"])
+def update_image_order():
+    """Update the image order in session"""
+    try:
+        data = request.get_json()
+        if not data or 'image_urls' not in data:
+            return jsonify({"error": "No image_urls provided"}), 400
+
+        new_order = data['image_urls']
+
+        # Update session
+        if 'pending_listing' in session:
+            session['pending_listing']['image_urls'] = new_order
+            session.modified = True
+            log.info(f"Image order updated: {len(new_order)} images reordered")
+            return jsonify({"success": True})
+        else:
+            return jsonify({"error": "No pending listing found"}), 400
+
+    except Exception as e:
+        log.error(f"Error updating image order: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/publish", methods=["POST"])
 def publish_listing():
     """Publish the pending listing to eBay"""
@@ -319,8 +343,37 @@ def publish_listing():
         if not offer_id:
             return jsonify({"error": "No offer_id provided"}), 400
 
-        # Get token and publish
+        # Get token
         token = get_oauth_token()
+
+        # Check if image order was changed
+        new_image_urls = data.get('image_urls')
+        pending_listing = session.get('pending_listing', {})
+
+        if new_image_urls and new_image_urls != pending_listing.get('image_urls'):
+            # Image order changed - need to update inventory item
+            log.info(f"Image order changed, updating inventory item...")
+            sku = pending_listing.get('sku')
+
+            if sku:
+                # Rebuild and update the inventory item with new image order
+                inv_payload = build_inventory_item_payload(
+                    sku=sku,
+                    title=pending_listing.get('title', ''),
+                    description=pending_listing.get('description', ''),
+                    quantity=pending_listing.get('quantity', 1),
+                    image_urls=new_image_urls,
+                    condition=pending_listing.get('condition', 'USED_EXCELLENT'),
+                    aspects=pending_listing.get('aspects', {}),
+                )
+                create_or_replace_inventory_item(token, sku, inv_payload)
+                log.info(f"Inventory item updated with new image order")
+
+                # Update session
+                session['pending_listing']['image_urls'] = new_image_urls
+                session.modified = True
+
+        # Publish the offer
         result = publish_offer(token, offer_id)
 
         listing_id = result.get("listingId")

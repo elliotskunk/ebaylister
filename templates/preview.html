@@ -73,6 +73,31 @@
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
         }
+        .thumbnail-wrapper {
+            position: relative;
+            cursor: grab;
+        }
+        .thumbnail-wrapper:active {
+            cursor: grabbing;
+        }
+        .thumbnail-wrapper.dragging {
+            opacity: 0.5;
+        }
+        .thumbnail-wrapper .order-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: #0064d2;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
         .thumbnail {
             width: 100%;
             height: 80px;
@@ -84,6 +109,12 @@
         }
         .thumbnail:hover, .thumbnail.active {
             border-color: #0064d2;
+        }
+        .reorder-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
         }
         .details-section h2 {
             color: #333;
@@ -241,11 +272,15 @@
             <div class="images-section">
                 <img id="mainImage" class="main-image" src="{{ image_urls[0] }}" alt="Product image">
                 {% if image_urls|length > 1 %}
-                <div class="thumbnail-grid">
+                <div class="thumbnail-grid" id="thumbnailGrid">
                     {% for url in image_urls %}
-                    <img class="thumbnail {% if loop.first %}active{% endif %}" src="{{ url }}" alt="Thumbnail {{ loop.index }}" onclick="selectImage(this, '{{ url }}')">
+                    <div class="thumbnail-wrapper" draggable="true" data-url="{{ url }}" data-index="{{ loop.index0 }}">
+                        <span class="order-badge">{{ loop.index }}</span>
+                        <img class="thumbnail {% if loop.first %}active{% endif %}" src="{{ url }}" alt="Thumbnail {{ loop.index }}" onclick="selectImage(this, '{{ url }}')">
+                    </div>
                     {% endfor %}
                 </div>
+                <div class="reorder-hint">Drag and drop images to reorder. First image will be the main listing photo.</div>
                 {% endif %}
             </div>
 
@@ -318,11 +353,133 @@
     </div>
 
     <script>
+        // Image order tracking
+        let imageOrder = {{ image_urls | tojson }};
+        let draggedItem = null;
+
         function selectImage(thumb, url) {
             document.getElementById('mainImage').src = url;
             document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
         }
+
+        // Drag and drop functionality
+        function initDragAndDrop() {
+            const grid = document.getElementById('thumbnailGrid');
+            if (!grid) return;
+
+            const wrappers = grid.querySelectorAll('.thumbnail-wrapper');
+
+            wrappers.forEach(wrapper => {
+                wrapper.addEventListener('dragstart', handleDragStart);
+                wrapper.addEventListener('dragend', handleDragEnd);
+                wrapper.addEventListener('dragover', handleDragOver);
+                wrapper.addEventListener('drop', handleDrop);
+                wrapper.addEventListener('dragenter', handleDragEnter);
+                wrapper.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.thumbnail-wrapper').forEach(w => {
+                w.style.border = '';
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (this !== draggedItem) {
+                this.style.border = '2px dashed #0064d2';
+            }
+        }
+
+        function handleDragLeave(e) {
+            this.style.border = '';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.style.border = '';
+
+            if (draggedItem !== this) {
+                const grid = document.getElementById('thumbnailGrid');
+                const items = Array.from(grid.children);
+                const draggedIndex = items.indexOf(draggedItem);
+                const droppedIndex = items.indexOf(this);
+
+                if (draggedIndex < droppedIndex) {
+                    grid.insertBefore(draggedItem, this.nextSibling);
+                } else {
+                    grid.insertBefore(draggedItem, this);
+                }
+
+                updateImageOrder();
+            }
+        }
+
+        function updateImageOrder() {
+            const grid = document.getElementById('thumbnailGrid');
+            const wrappers = grid.querySelectorAll('.thumbnail-wrapper');
+
+            // Update order badges and track new order
+            imageOrder = [];
+            wrappers.forEach((wrapper, index) => {
+                wrapper.querySelector('.order-badge').textContent = index + 1;
+                imageOrder.push(wrapper.dataset.url);
+            });
+
+            // Update main image to first in order
+            document.getElementById('mainImage').src = imageOrder[0];
+
+            // Mark first as active
+            wrappers.forEach((w, i) => {
+                const thumb = w.querySelector('.thumbnail');
+                if (i === 0) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+
+            // Save to server
+            saveImageOrder();
+        }
+
+        function saveImageOrder() {
+            fetch('/update-image-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image_urls: imageOrder
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Failed to save image order:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving image order:', error);
+            });
+        }
+
+        // Initialize drag and drop on page load
+        document.addEventListener('DOMContentLoaded', initDragAndDrop);
 
         function publishListing() {
             const btn = document.getElementById('publishBtn');
@@ -339,7 +496,8 @@
                 },
                 body: JSON.stringify({
                     offer_id: '{{ offer_id }}',
-                    sku: '{{ sku }}'
+                    sku: '{{ sku }}',
+                    image_urls: imageOrder
                 })
             })
             .then(response => {
