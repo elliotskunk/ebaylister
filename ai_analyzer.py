@@ -117,15 +117,25 @@ Return ONLY valid JSON with this exact structure:
     "Colour": ["Color"],
     "Material": ["Material"],
     "Style": ["Style"],
-    "Fit": ["Fit Type"],
+    "Fit": ["Regular, Slim, Loose, Oversized"],
+    "Department": ["Mens, Womens, Boys, Girls, Unisex Adults"],
+    "Neckline": ["Crew Neck, V-Neck, Round Neck, Scoop Neck"],
+    "Sleeve Length": ["Short Sleeve, Long Sleeve, 3/4 Sleeve, Sleeveless"],
+    "Sleeve Type": ["Regular, Set-In, Raglan"],
+    "Size Type": ["Regular, Plus, Petite, Tall"],
+    "Garment Care": ["Machine Washable, Hand Wash Only, Dry Clean"],
+    "Closure": ["Pull On, Button, Zip, None"],
     "Era": ["Decade/Era"],
     "Country/Region of Manufacture": ["Country"],
     "Features": ["Feature1", "Feature2"],
     "Theme": ["Theme if applicable"],
-    "Pattern": ["Pattern type"],
+    "Pattern": ["Solid, Striped, Graphic Print, Tie Dye, Floral"],
     "Character": ["Character/Brand Partnership if any"],
-    "Occasion": ["When to use/wear"],
-    "Care Instructions": ["Washing/cleaning instructions"],
+    "Occasion": ["Casual, Formal, Sportswear, Loungewear"],
+    "Season": ["Summer, Winter, All Seasons, Spring/Autumn"],
+    "Accents": ["Embroidered, Printed, Distressed, None"],
+    "Fabric Type": ["Jersey, Woven, Knit, Denim, Fleece"],
+    "Lining": ["Unlined, Lined, Partially Lined"],
     "Number in Pack": ["1"],
     "Personalised": ["No"],
     "Vintage": ["Yes or No"]
@@ -133,7 +143,7 @@ Return ONLY valid JSON with this exact structure:
   "category_keywords": "specific category identifying terms"
 }
 
-IMPORTANT: Fill in as MANY aspects as possible from what you can see. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly."""
+IMPORTANT: Fill in as MANY aspects as possible from what you can see. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly. For CLOTHING items, pay special attention to: neckline, sleeve type/length, pattern/print type, fabric composition, fit style, and any special features or accents."""
 
         user_prompt = "Analyze this item and create an eBay listing optimized for Cassini SEO. Return only the JSON response."
 
@@ -301,15 +311,25 @@ Return ONLY valid JSON with this exact structure:
     "Colour": ["Color"],
     "Material": ["Material"],
     "Style": ["Style"],
-    "Fit": ["Fit Type"],
+    "Fit": ["Regular, Slim, Loose, Oversized"],
+    "Department": ["Mens, Womens, Boys, Girls, Unisex Adults"],
+    "Neckline": ["Crew Neck, V-Neck, Round Neck, Scoop Neck"],
+    "Sleeve Length": ["Short Sleeve, Long Sleeve, 3/4 Sleeve, Sleeveless"],
+    "Sleeve Type": ["Regular, Set-In, Raglan"],
+    "Size Type": ["Regular, Plus, Petite, Tall"],
+    "Garment Care": ["Machine Washable, Hand Wash Only, Dry Clean"],
+    "Closure": ["Pull On, Button, Zip, None"],
     "Era": ["Decade/Era"],
     "Country/Region of Manufacture": ["Country"],
     "Features": ["Feature1", "Feature2"],
     "Theme": ["Theme if applicable"],
-    "Pattern": ["Pattern type"],
+    "Pattern": ["Solid, Striped, Graphic Print, Tie Dye, Floral"],
     "Character": ["Character/Brand Partnership if any"],
-    "Occasion": ["When to use/wear"],
-    "Care Instructions": ["Washing/cleaning instructions"],
+    "Occasion": ["Casual, Formal, Sportswear, Loungewear"],
+    "Season": ["Summer, Winter, All Seasons, Spring/Autumn"],
+    "Accents": ["Embroidered, Printed, Distressed, None"],
+    "Fabric Type": ["Jersey, Woven, Knit, Denim, Fleece"],
+    "Lining": ["Unlined, Lined, Partially Lined"],
     "Number in Pack": ["1"],
     "Personalised": ["No"],
     "Vintage": ["Yes or No"]
@@ -317,7 +337,7 @@ Return ONLY valid JSON with this exact structure:
   "category_keywords": "specific category identifying terms"
 }
 
-IMPORTANT: Fill in as MANY aspects as possible from what you can see in ALL images. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly."""
+IMPORTANT: Fill in as MANY aspects as possible from what you can see in ALL images. More aspects = better search ranking. If you cannot determine an aspect, omit it rather than guessing incorrectly. For CLOTHING items, pay special attention to: neckline, sleeve type/length, pattern/print type, fabric composition, fit style, and any special features or accents."""
 
         messages = [
             {"role": "system", "content": system_prompt},
