@@ -31,7 +31,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max for multiple images
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max for multiple images
 
 # Configure logging
 LOG_DIR = os.getenv("LOG_DIR", "logs")
