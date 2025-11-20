@@ -70,6 +70,9 @@ CRITICAL SEO RULES FOR CASSINI:
    - Example: "Vintage Levi's 501 Jeans Blue Denim W32 L34 Made in USA 90s"
 
 2. ITEM SPECIFICS: Critical for Cassini ranking
+   - **CRITICAL: If you identify a brand (visible on tags/labels or recognized from the product), you MUST include it in BOTH the title AND the aspects["Brand"] field**
+   - Brand in aspects MUST match the brand mentioned in the title
+   - If truly no brand is identifiable, use "Unbranded" in aspects["Brand"]
    - Provide as many accurate specifics as possible
    - Use eBay's standard aspect names (Brand, Size, Color, Material, Style, etc.)
    - Be specific and detailed
@@ -238,6 +241,9 @@ CRITICAL SEO RULES FOR CASSINI:
    - Example: "Vintage Levi's 501 Jeans Blue Denim W32 L34 Made in USA 90s"
 
 2. ITEM SPECIFICS: Critical for Cassini ranking
+   - **CRITICAL: If you identify a brand (visible on tags/labels or recognized from the product), you MUST include it in BOTH the title AND the aspects["Brand"] field**
+   - Brand in aspects MUST match the brand mentioned in the title (e.g., if title says "Orla Kiely", aspects["Brand"] must be ["Orla Kiely"], NOT ["Unbranded"])
+   - If truly no brand is identifiable, use "Unbranded" in aspects["Brand"]
    - Provide as many accurate specifics as possible from ALL images
    - Use eBay's standard aspect names (Brand, Size, Color, Material, Style, etc.)
    - Be specific and detailed - check all images for tags/labels
