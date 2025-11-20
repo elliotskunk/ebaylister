@@ -9,15 +9,18 @@ ITEM_TYPE_RULES = {
         "name": "Clothing",
         "default_category_id": "15687",  # Men's T-Shirts
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "PRE_OWNED_EXCELLENT",
-            "excellent": "PRE_OWNED_EXCELLENT",
-            "very_good": "PRE_OWNED_EXCELLENT",
-            "good": "USED_GOOD",
-            "fair": "PRE_OWNED_FAIR",
-            "acceptable": "PRE_OWNED_FAIR",
+            # Clothing/Apparel conditions (eBay UI labels → ConditionEnum)
+            "new": "NEW",  # "New with tags"
+            "new_without_tags": "NEW_OTHER",  # "New without tags"
+            "new_with_defects": "NEW_WITH_DEFECTS",  # "New with imperfections"
+            "like_new": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "excellent": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "very_good": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "good": "USED_EXCELLENT",  # "Pre-owned - Good" (ID 3000 shows as this in apparel)
+            "fair": "PRE_OWNED_FAIR",  # "Pre-owned - Fair"
+            "acceptable": "PRE_OWNED_FAIR",  # "Pre-owned - Fair"
         },
-        "default_condition": "PRE_OWNED_EXCELLENT",
+        "default_condition": "PRE_OWNED_EXCELLENT",  # Safest default for used clothing
         "required_aspects": ["Brand", "Department"],
         "default_aspects": {
             "Brand": "Unbranded",
@@ -29,15 +32,18 @@ ITEM_TYPE_RULES = {
         "name": "Kitchenware/Crockery",
         "default_category_id": "20693",  # Mugs category
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "LIKE_NEW",
-            "excellent": "LIKE_NEW",
-            "very_good": "USED_VERY_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_ACCEPTABLE",
-            "acceptable": "USED_ACCEPTABLE",
+            # Kitchenware conditions (eBay UI: "New", "New (Other)", "Used")
+            "new": "NEW",  # "New"
+            "new_other": "NEW_OTHER",  # "New (Other)"
+            "like_new": "NEW_OTHER",  # Map to "New (Other)"
+            "excellent": "USED_EXCELLENT",  # "Used"
+            "very_good": "USED_EXCELLENT",  # "Used"
+            "good": "USED_EXCELLENT",  # "Used"
+            "fair": "USED_EXCELLENT",  # "Used"
+            "acceptable": "USED_EXCELLENT",  # "Used"
+            "used": "USED_EXCELLENT",  # "Used"
         },
-        "default_condition": "USED_VERY_GOOD",
+        "default_condition": "USED_EXCELLENT",  # Default to "Used"
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
@@ -48,15 +54,18 @@ ITEM_TYPE_RULES = {
         "name": "Shoes",
         "default_category_id": "93427",  # Men's Shoes
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "PRE_OWNED_EXCELLENT",
-            "excellent": "PRE_OWNED_EXCELLENT",
-            "very_good": "PRE_OWNED_EXCELLENT",
-            "good": "USED_GOOD",
-            "fair": "PRE_OWNED_FAIR",
-            "acceptable": "PRE_OWNED_FAIR",
+            # Shoes conditions (eBay UI labels → ConditionEnum) - same as clothing (apparel)
+            "new": "NEW",  # "New with box"
+            "new_without_box": "NEW_OTHER",  # "New without box"
+            "new_with_defects": "NEW_WITH_DEFECTS",  # "New with defects"
+            "like_new": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "excellent": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "very_good": "PRE_OWNED_EXCELLENT",  # "Pre-owned - Excellent"
+            "good": "USED_EXCELLENT",  # "Pre-owned - Good" (ID 3000)
+            "fair": "PRE_OWNED_FAIR",  # "Pre-owned - Fair"
+            "acceptable": "PRE_OWNED_FAIR",  # "Pre-owned - Fair"
         },
-        "default_condition": "PRE_OWNED_EXCELLENT",
+        "default_condition": "PRE_OWNED_EXCELLENT",  # Safest default for used shoes
         "required_aspects": ["Brand", "UK Shoe Size"],
         "default_aspects": {
             "Brand": "Unbranded",
@@ -67,15 +76,16 @@ ITEM_TYPE_RULES = {
         "name": "Books & Media",
         "default_category_id": "261186",  # Books
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "LIKE_NEW",
-            "excellent": "LIKE_NEW",
-            "very_good": "USED_VERY_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_ACCEPTABLE",
-            "acceptable": "USED_ACCEPTABLE",
+            # Books/Media/Collectibles conditions (eBay UI: "New", "Like New", "Very Good", "Good", "Acceptable")
+            "new": "NEW",  # "New"
+            "like_new": "LIKE_NEW",  # "Like New"
+            "excellent": "LIKE_NEW",  # "Like New"
+            "very_good": "USED_VERY_GOOD",  # "Very Good"
+            "good": "USED_GOOD",  # "Good"
+            "fair": "USED_ACCEPTABLE",  # "Acceptable"
+            "acceptable": "USED_ACCEPTABLE",  # "Acceptable"
         },
-        "default_condition": "USED_VERY_GOOD",
+        "default_condition": "USED_VERY_GOOD",  # "Very Good"
         "required_aspects": ["Brand"],  # Books use Author but Brand is still needed
         "default_aspects": {
             "Brand": "Unbranded",
@@ -86,15 +96,17 @@ ITEM_TYPE_RULES = {
         "name": "Electronics",
         "default_category_id": "175672",  # Consumer Electronics
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "USED_EXCELLENT",
-            "excellent": "USED_EXCELLENT",
-            "very_good": "USED_VERY_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_ACCEPTABLE",
-            "acceptable": "USED_ACCEPTABLE",
+            # Electronics conditions - similar to general items
+            "new": "NEW",  # "New"
+            "like_new": "LIKE_NEW",  # "Like New"
+            "excellent": "USED_EXCELLENT",  # "Excellent" / "Used - Excellent"
+            "very_good": "USED_VERY_GOOD",  # "Very Good"
+            "good": "USED_GOOD",  # "Good"
+            "fair": "USED_ACCEPTABLE",  # "Acceptable"
+            "acceptable": "USED_ACCEPTABLE",  # "Acceptable"
+            "for_parts": "FOR_PARTS_OR_NOT_WORKING",  # "For parts or not working"
         },
-        "default_condition": "USED_VERY_GOOD",
+        "default_condition": "USED_VERY_GOOD",  # "Very Good"
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
@@ -105,15 +117,16 @@ ITEM_TYPE_RULES = {
         "name": "General/Other",
         "default_category_id": "11450",  # Other
         "condition_mapping": {
-            "new": "NEW",
-            "like_new": "USED_EXCELLENT",
-            "excellent": "USED_EXCELLENT",
-            "very_good": "USED_VERY_GOOD",
-            "good": "USED_GOOD",
-            "fair": "USED_ACCEPTABLE",
-            "acceptable": "USED_ACCEPTABLE",
+            # General/Collectibles/Memorabilia conditions (eBay UI: "New", "Like New", "Very Good", "Good", "Acceptable")
+            "new": "NEW",  # "New"
+            "like_new": "LIKE_NEW",  # "Like New"
+            "excellent": "USED_EXCELLENT",  # "Excellent" / "Used - Excellent"
+            "very_good": "USED_VERY_GOOD",  # "Very Good"
+            "good": "USED_GOOD",  # "Good"
+            "fair": "USED_ACCEPTABLE",  # "Acceptable"
+            "acceptable": "USED_ACCEPTABLE",  # "Acceptable"
         },
-        "default_condition": "USED_VERY_GOOD",
+        "default_condition": "USED_VERY_GOOD",  # "Very Good"
         "required_aspects": ["Brand"],
         "default_aspects": {
             "Brand": "Unbranded",
