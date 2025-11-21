@@ -227,49 +227,9 @@ def upload_and_create_listing():
         # 8. Generate SKU
         sku = sku_base
 
-        # 9. Create inventory item with ALL image URLs
-        log.info(f"Creating inventory item: {sku}")
-        log.info(f"Brand from aspects: {aspects.get('Brand', 'NOT FOUND')}")
-        try:
-            inv_payload = build_inventory_item_payload(
-                sku=sku,
-                title=title,
-                description=ai_result["description"],
-                quantity=1,
-                image_urls=image_urls,  # Now supports multiple images
-                condition=condition,  # Already normalized for item type
-                aspects=aspects,  # Already has required aspects applied
-            )
-
-            create_or_replace_inventory_item(token, sku, inv_payload)
-            log.info(f"Inventory item created: {sku}")
-
-        except EbayError as e:
-            log.error(f"Failed to create inventory item: {e}")
-            return jsonify({"error": f"Failed to create inventory item: {e}"}), 502
-
-        # 10. Create offer (draft listing)
-        log.info(f"Creating offer for SKU: {sku}")
-        try:
-            offer_payload = build_offer_payload(
-                sku=sku,
-                price_value=price,
-                category_id=category_id,
-            )
-
-            offer_response = create_offer(token, offer_payload)
-            offer_id = offer_response.get("offerId")
-
-            log.info(f"✅ Draft listing created! Offer ID: {offer_id}")
-
-        except EbayError as e:
-            log.error(f"Failed to create offer: {e}")
-            return jsonify({"error": f"Failed to create offer: {e}"}), 502
-
-        # 11. Store listing data in session for preview
-        session['pending_listing'] = {
+        # 9. Store AI results and image URLs in session for editing
+        session['draft_data'] = {
             "sku": sku,
-            "offer_id": offer_id,
             "title": title,
             "description": ai_result["description"],
             "price": price,
@@ -277,27 +237,127 @@ def upload_and_create_listing():
             "category_id": category_id,
             "category_name": f"{get_item_type_rules(item_type)['name']} ({item_type})",
             "image_urls": image_urls,
-            "condition": condition,  # Use the normalized condition
+            "condition": condition,
             "quantity": 1,
             "marketplace": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB"),
-            "aspects": aspects,  # Use the processed aspects with required fields
-            "brand": aspects.get("Brand", [""])[0] if aspects.get("Brand") else "",
+            "aspects": aspects,
             "item_type": item_type,
         }
 
-        log.info(f"Redirecting to preview page for offer: {offer_id}")
+        log.info(f"Redirecting to edit page for review")
 
-        # Redirect to preview page
-        return redirect(url_for('preview_listing'))
+        # Redirect to edit page (not creating listing yet!)
+        return redirect(url_for('edit_listing'))
 
     except Exception as e:
         log.exception("Unexpected error in upload_and_create_listing")
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 
+@app.route("/edit-listing")
+def edit_listing():
+    """Show editable form with AI-generated listing data"""
+    draft_data = session.get('draft_data')
+    if not draft_data:
+        return redirect(url_for('index'))
+
+    return render_template('edit_listing.html', **draft_data)
+
+
+@app.route("/create-listing", methods=["POST"])
+def create_listing():
+    """Create eBay listing with edited data"""
+    try:
+        # Get edited data from form
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Get draft data from session
+        draft_data = session.get('draft_data')
+        if not draft_data:
+            return jsonify({"error": "No draft data found. Please start over."}), 400
+
+        # Extract edited fields
+        sku = draft_data['sku']
+        title = data.get('title', draft_data['title'])
+        description = data.get('description', draft_data['description'])
+        price = float(data.get('price', draft_data['price']))
+        category_id = data.get('category_id', draft_data['category_id'])
+        condition = data.get('condition', draft_data['condition'])
+        aspects = data.get('aspects', draft_data['aspects'])
+        image_urls = draft_data['image_urls']
+
+        log.info(f"Creating listing with edited data: {sku}")
+
+        # Get OAuth token
+        token = get_oauth_token()
+
+        # Create inventory item
+        inv_payload = build_inventory_item_payload(
+            sku=sku,
+            title=title,
+            description=description,
+            quantity=1,
+            image_urls=image_urls,
+            condition=condition,
+            aspects=aspects,
+        )
+
+        create_or_replace_inventory_item(token, sku, inv_payload)
+        log.info(f"Inventory item created: {sku}")
+
+        # Create offer (draft listing)
+        offer_payload = build_offer_payload(
+            sku=sku,
+            price_value=price,
+            category_id=category_id,
+        )
+
+        offer_response = create_offer(token, offer_payload)
+        offer_id = offer_response.get("offerId")
+
+        log.info(f"✅ Draft listing created! Offer ID: {offer_id}")
+
+        # Store final listing data
+        session['pending_listing'] = {
+            "sku": sku,
+            "offer_id": offer_id,
+            "title": title,
+            "description": description,
+            "price": price,
+            "currency": "GBP",
+            "category_id": category_id,
+            "category_name": draft_data.get('category_name', ''),
+            "image_urls": image_urls,
+            "condition": condition,
+            "quantity": 1,
+            "marketplace": draft_data.get('marketplace', 'EBAY_GB'),
+            "aspects": aspects,
+            "brand": aspects.get("Brand", [""])[0] if aspects.get("Brand") else "",
+            "item_type": draft_data.get('item_type', 'general'),
+        }
+
+        # Clear draft data
+        session.pop('draft_data', None)
+
+        return jsonify({
+            "success": True,
+            "offer_id": offer_id,
+            "redirect_url": url_for('preview_listing')
+        })
+
+    except EbayError as e:
+        log.error(f"Failed to create listing: {e}")
+        return jsonify({"error": f"Failed to create listing: {e}"}), 502
+    except Exception as e:
+        log.exception("Unexpected error creating listing")
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
 @app.route("/preview")
 def preview_listing():
-    """Show preview of listing before publishing"""
+    """Show preview of successfully created listing"""
     listing_data = session.get('pending_listing')
     if not listing_data:
         return redirect(url_for('index'))
