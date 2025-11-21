@@ -468,6 +468,7 @@
                 previewContainer.style.display = 'none';
                 uploadArea.style.display = 'block';
                 imageCount.textContent = '0 images selected';
+                previewGrid.innerHTML = '';
                 return;
             }
 
@@ -475,60 +476,75 @@
             previewContainer.style.display = 'block';
             imageCount.textContent = `${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} selected`;
 
+            // Clear and create fixed position boxes
             previewGrid.innerHTML = '';
-            selectedFiles.forEach((file, index) => {
+
+            selectedFiles.forEach((file, boxIndex) => {
+                const box = document.createElement('div');
+                box.className = 'preview-item';
+                box.draggable = true;
+                box.dataset.boxIndex = boxIndex; // Fixed box position that never changes
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    div.draggable = true;
-                    div.dataset.index = index;
-                    div.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview ${index + 1}">
-                        <button type="button" class="remove-btn" onclick="removeImage(${index})">✕</button>
-                        <span class="image-number">#${index + 1}</span>
+                    box.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${boxIndex + 1}">
+                        <button type="button" class="remove-btn" data-box-index="${boxIndex}">✕</button>
+                        <span class="image-number">#${boxIndex + 1}</span>
                     `;
-
-                    // Add drag event listeners (desktop)
-                    div.addEventListener('dragstart', handleDragStart);
-                    div.addEventListener('dragover', handleDragOver);
-                    div.addEventListener('drop', handleDrop);
-                    div.addEventListener('dragenter', handleDragEnter);
-                    div.addEventListener('dragleave', handleDragLeave);
-                    div.addEventListener('dragend', handleDragEnd);
-
-                    // Add touch event listeners (mobile)
-                    div.addEventListener('touchstart', handleTouchStart, { passive: false });
-                    div.addEventListener('touchmove', handleTouchMove, { passive: false });
-                    div.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-                    previewGrid.appendChild(div);
                 };
                 reader.readAsDataURL(file);
+
+                // Add drag event listeners (desktop)
+                box.addEventListener('dragstart', handleDragStart);
+                box.addEventListener('dragover', handleDragOver);
+                box.addEventListener('drop', handleDrop);
+                box.addEventListener('dragenter', handleDragEnter);
+                box.addEventListener('dragleave', handleDragLeave);
+                box.addEventListener('dragend', handleDragEnd);
+
+                // Add touch event listeners (mobile)
+                box.addEventListener('touchstart', handleTouchStart, { passive: false });
+                box.addEventListener('touchmove', handleTouchMove, { passive: false });
+                box.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+                previewGrid.appendChild(box);
+            });
+
+            // Add remove button handlers
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const boxIndex = parseInt(btn.dataset.boxIndex);
+                    removeImage(boxIndex);
+                });
             });
         }
 
         // Drag and drop reordering (desktop and mobile)
-        let draggedIndex = null;
+        let draggedBoxIndex = null;
         let draggedElement = null;
-        let lastDropTarget = null;  // Track last valid drop target for mobile
 
         function handleDragStart(e) {
-            draggedIndex = parseInt(e.target.dataset.index);
-            e.target.classList.add('dragging');
+            const box = e.target.closest('.preview-item');
+            if (!box) return;
+
+            draggedBoxIndex = parseInt(box.dataset.boxIndex);
+            box.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
         }
 
         function handleDragOver(e) {
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
+            e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             return false;
         }
 
         function handleDragEnter(e) {
-            e.target.closest('.preview-item')?.classList.add('drag-over');
+            const box = e.target.closest('.preview-item');
+            if (box && parseInt(box.dataset.boxIndex) !== draggedBoxIndex) {
+                box.classList.add('drag-over');
+            }
         }
 
         function handleDragLeave(e) {
@@ -536,94 +552,91 @@
         }
 
         function handleDrop(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
+            e.stopPropagation();
             e.preventDefault();
 
-            const dropTarget = e.target.closest('.preview-item');
-            if (!dropTarget) return;
+            const dropBox = e.target.closest('.preview-item');
+            if (!dropBox) return;
 
-            const dropIndex = parseInt(dropTarget.dataset.index);
+            const dropBoxIndex = parseInt(dropBox.dataset.boxIndex);
 
-            if (draggedIndex !== null && draggedIndex !== dropIndex) {
-                // Reorder the files array
-                const draggedFile = selectedFiles[draggedIndex];
-                selectedFiles.splice(draggedIndex, 1);
-                selectedFiles.splice(dropIndex, 0, draggedFile);
+            if (draggedBoxIndex !== null && draggedBoxIndex !== dropBoxIndex) {
+                // Swap files between the two boxes
+                const temp = selectedFiles[draggedBoxIndex];
+                selectedFiles[draggedBoxIndex] = selectedFiles[dropBoxIndex];
+                selectedFiles[dropBoxIndex] = temp;
 
-                // Update the preview
+                // Update only the affected boxes (more efficient)
                 updatePreview();
             }
+
+            // Clean up
+            document.querySelectorAll('.preview-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
 
             return false;
         }
 
         function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
+            e.target.closest('.preview-item')?.classList.remove('dragging');
             document.querySelectorAll('.preview-item').forEach(item => {
                 item.classList.remove('drag-over');
             });
-            draggedIndex = null;
+            draggedBoxIndex = null;
         }
 
         // Touch events for mobile
         function handleTouchStart(e) {
-            // Prevent default to avoid context menu
-            e.preventDefault();
+            e.preventDefault(); // Prevent context menu and scrolling
 
-            const item = e.target.closest('.preview-item');
-            if (!item) return;
+            const box = e.target.closest('.preview-item');
+            if (!box) return;
 
-            draggedIndex = parseInt(item.dataset.index);
-            draggedElement = item;
-            item.classList.add('dragging');
-
-            // Store initial touch position
-            const touch = e.touches[0];
-            item.dataset.startX = touch.clientX;
-            item.dataset.startY = touch.clientY;
+            draggedBoxIndex = parseInt(box.dataset.boxIndex);
+            draggedElement = box;
+            box.classList.add('dragging');
         }
 
         function handleTouchMove(e) {
-            if (draggedIndex === null || !draggedElement) return;
+            if (draggedBoxIndex === null || !draggedElement) return;
 
             e.preventDefault();
             const touch = e.touches[0];
 
             // Get element under touch point
             const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-            const dropTarget = elementBelow?.closest('.preview-item');
+            const dropBox = elementBelow?.closest('.preview-item');
 
             // Remove all drag-over classes
-            document.querySelectorAll('.preview-item').forEach(item => {
-                item.classList.remove('drag-over');
+            document.querySelectorAll('.preview-item').forEach(box => {
+                box.classList.remove('drag-over');
             });
 
-            // Add drag-over to target if it's different from dragged item
-            if (dropTarget && dropTarget !== draggedElement) {
-                dropTarget.classList.add('drag-over');
+            // Add drag-over to target if it's different from dragged box
+            if (dropBox && dropBox !== draggedElement) {
+                dropBox.classList.add('drag-over');
             }
         }
 
         function handleTouchEnd(e) {
-            if (draggedIndex === null || !draggedElement) return;
+            if (draggedBoxIndex === null || !draggedElement) return;
 
             e.preventDefault();
             const touch = e.changedTouches[0];
 
             // Get element under final touch point
             const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-            const dropTarget = elementBelow?.closest('.preview-item');
+            const dropBox = elementBelow?.closest('.preview-item');
 
-            if (dropTarget && dropTarget !== draggedElement) {
-                const dropIndex = parseInt(dropTarget.dataset.index);
+            if (dropBox && dropBox !== draggedElement) {
+                const dropBoxIndex = parseInt(dropBox.dataset.boxIndex);
 
-                if (draggedIndex !== dropIndex) {
-                    // Reorder the files array
-                    const draggedFile = selectedFiles[draggedIndex];
-                    selectedFiles.splice(draggedIndex, 1);
-                    selectedFiles.splice(dropIndex, 0, draggedFile);
+                if (draggedBoxIndex !== dropBoxIndex) {
+                    // Swap files between the two boxes
+                    const temp = selectedFiles[draggedBoxIndex];
+                    selectedFiles[draggedBoxIndex] = selectedFiles[dropBoxIndex];
+                    selectedFiles[dropBoxIndex] = temp;
 
                     // Update the preview
                     updatePreview();
@@ -632,10 +645,10 @@
 
             // Clean up
             draggedElement?.classList.remove('dragging');
-            document.querySelectorAll('.preview-item').forEach(item => {
-                item.classList.remove('drag-over');
+            document.querySelectorAll('.preview-item').forEach(box => {
+                box.classList.remove('drag-over');
             });
-            draggedIndex = null;
+            draggedBoxIndex = null;
             draggedElement = null;
         }
 
