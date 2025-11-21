@@ -511,7 +511,7 @@
         // Drag and drop reordering (desktop and mobile)
         let draggedIndex = null;
         let draggedElement = null;
-        let touchMoveHandler = null;
+        let lastDropTarget = null;  // Track last valid drop target for mobile
 
         function handleDragStart(e) {
             draggedIndex = parseInt(e.target.dataset.index);
