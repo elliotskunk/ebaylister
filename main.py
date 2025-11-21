@@ -8,7 +8,7 @@ import logging
 from io import BytesIO
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from dotenv import load_dotenv
-from PIL import Image
+from PIL import Image, ImageOps
 
 # Import our modules
 from auth import get_oauth_token
@@ -74,6 +74,9 @@ def validate_and_process_image(image_file) -> bytes:
 
         # Validate it's a real image
         img = Image.open(BytesIO(image_bytes))
+
+        # Fix EXIF orientation (handles phone photos that are rotated)
+        img = ImageOps.exif_transpose(img)
 
         # Convert to RGB if needed (handles PNG with alpha, etc.)
         if img.mode not in ('RGB', 'L'):
