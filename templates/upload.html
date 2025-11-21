@@ -489,7 +489,7 @@
                         <span class="image-number">#${index + 1}</span>
                     `;
 
-                    // Add drag event listeners
+                    // Add drag event listeners (desktop)
                     div.addEventListener('dragstart', handleDragStart);
                     div.addEventListener('dragover', handleDragOver);
                     div.addEventListener('drop', handleDrop);
@@ -497,14 +497,21 @@
                     div.addEventListener('dragleave', handleDragLeave);
                     div.addEventListener('dragend', handleDragEnd);
 
+                    // Add touch event listeners (mobile)
+                    div.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    div.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    div.addEventListener('touchend', handleTouchEnd, { passive: false });
+
                     previewGrid.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        // Drag and drop reordering
+        // Drag and drop reordering (desktop and mobile)
         let draggedIndex = null;
+        let draggedElement = null;
+        let touchMoveHandler = null;
 
         function handleDragStart(e) {
             draggedIndex = parseInt(e.target.dataset.index);
@@ -558,6 +565,78 @@
                 item.classList.remove('drag-over');
             });
             draggedIndex = null;
+        }
+
+        // Touch events for mobile
+        function handleTouchStart(e) {
+            // Prevent default to avoid context menu
+            e.preventDefault();
+
+            const item = e.target.closest('.preview-item');
+            if (!item) return;
+
+            draggedIndex = parseInt(item.dataset.index);
+            draggedElement = item;
+            item.classList.add('dragging');
+
+            // Store initial touch position
+            const touch = e.touches[0];
+            item.dataset.startX = touch.clientX;
+            item.dataset.startY = touch.clientY;
+        }
+
+        function handleTouchMove(e) {
+            if (draggedIndex === null || !draggedElement) return;
+
+            e.preventDefault();
+            const touch = e.touches[0];
+
+            // Get element under touch point
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropTarget = elementBelow?.closest('.preview-item');
+
+            // Remove all drag-over classes
+            document.querySelectorAll('.preview-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+
+            // Add drag-over to target if it's different from dragged item
+            if (dropTarget && dropTarget !== draggedElement) {
+                dropTarget.classList.add('drag-over');
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (draggedIndex === null || !draggedElement) return;
+
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+
+            // Get element under final touch point
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropTarget = elementBelow?.closest('.preview-item');
+
+            if (dropTarget && dropTarget !== draggedElement) {
+                const dropIndex = parseInt(dropTarget.dataset.index);
+
+                if (draggedIndex !== dropIndex) {
+                    // Reorder the files array
+                    const draggedFile = selectedFiles[draggedIndex];
+                    selectedFiles.splice(draggedIndex, 1);
+                    selectedFiles.splice(dropIndex, 0, draggedFile);
+
+                    // Update the preview
+                    updatePreview();
+                }
+            }
+
+            // Clean up
+            draggedElement?.classList.remove('dragging');
+            document.querySelectorAll('.preview-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+            draggedIndex = null;
+            draggedElement = null;
         }
 
         function removeImage(index) {
