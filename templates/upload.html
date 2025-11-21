@@ -105,6 +105,23 @@
             border-radius: 10px;
             overflow: hidden;
             background: #f0f0f0;
+            cursor: move;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .preview-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .preview-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .preview-item.drag-over {
+            border: 3px solid #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
         }
 
         .preview-item img {
@@ -335,6 +352,7 @@
 
                 <div class="preview-container" id="previewContainer">
                     <div class="image-count" id="imageCount">0 images selected</div>
+                    <p style="text-align: center; color: #999; font-size: 0.85em; margin-bottom: 10px;">💡 Drag images to reorder • First image will be the main photo</p>
                     <div class="preview-grid" id="previewGrid"></div>
                     <button type="button" class="add-more-btn" id="addMoreBtn">+ Add More Images</button>
                     <button type="button" class="new-upload-btn" id="clearAllBtn">Clear All Images</button>
@@ -463,15 +481,83 @@
                 reader.onload = (e) => {
                     const div = document.createElement('div');
                     div.className = 'preview-item';
+                    div.draggable = true;
+                    div.dataset.index = index;
                     div.innerHTML = `
                         <img src="${e.target.result}" alt="Preview ${index + 1}">
                         <button type="button" class="remove-btn" onclick="removeImage(${index})">✕</button>
                         <span class="image-number">#${index + 1}</span>
                     `;
+
+                    // Add drag event listeners
+                    div.addEventListener('dragstart', handleDragStart);
+                    div.addEventListener('dragover', handleDragOver);
+                    div.addEventListener('drop', handleDrop);
+                    div.addEventListener('dragenter', handleDragEnter);
+                    div.addEventListener('dragleave', handleDragLeave);
+                    div.addEventListener('dragend', handleDragEnd);
+
                     previewGrid.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        // Drag and drop reordering
+        let draggedIndex = null;
+
+        function handleDragStart(e) {
+            draggedIndex = parseInt(e.target.dataset.index);
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            e.target.closest('.preview-item')?.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.target.closest('.preview-item')?.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            e.preventDefault();
+
+            const dropTarget = e.target.closest('.preview-item');
+            if (!dropTarget) return;
+
+            const dropIndex = parseInt(dropTarget.dataset.index);
+
+            if (draggedIndex !== null && draggedIndex !== dropIndex) {
+                // Reorder the files array
+                const draggedFile = selectedFiles[draggedIndex];
+                selectedFiles.splice(draggedIndex, 1);
+                selectedFiles.splice(dropIndex, 0, draggedFile);
+
+                // Update the preview
+                updatePreview();
+            }
+
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.preview-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+            draggedIndex = null;
         }
 
         function removeImage(index) {
