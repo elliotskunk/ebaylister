@@ -302,9 +302,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="condition">Condition</label>
-                    <input type="text" id="condition" value="{{ condition }}" readonly>
-                    <small>Based on item type: {{ item_type }}</small>
+                    <label for="condition">Condition *</label>
+                    <select id="condition" required>
+                        <option value="NEW" {% if condition == 'NEW' %}selected{% endif %}>New</option>
+                        <option value="NEW_OTHER" {% if condition == 'NEW_OTHER' %}selected{% endif %}>New (Other)</option>
+                        <option value="NEW_WITH_DEFECTS" {% if condition == 'NEW_WITH_DEFECTS' %}selected{% endif %}>New with Defects</option>
+                        <option value="LIKE_NEW" {% if condition == 'LIKE_NEW' %}selected{% endif %}>Like New</option>
+                        <option value="PRE_OWNED_EXCELLENT" {% if condition == 'PRE_OWNED_EXCELLENT' %}selected{% endif %}>Pre-owned - Excellent</option>
+                        <option value="USED_EXCELLENT" {% if condition == 'USED_EXCELLENT' %}selected{% endif %}>Used - Excellent / Good</option>
+                        <option value="USED_VERY_GOOD" {% if condition == 'USED_VERY_GOOD' %}selected{% endif %}>Used - Very Good</option>
+                        <option value="USED_GOOD" {% if condition == 'USED_GOOD' %}selected{% endif %}>Used - Good</option>
+                        <option value="PRE_OWNED_FAIR" {% if condition == 'PRE_OWNED_FAIR' %}selected{% endif %}>Pre-owned - Fair</option>
+                        <option value="USED_ACCEPTABLE" {% if condition == 'USED_ACCEPTABLE' %}selected{% endif %}>Used - Acceptable</option>
+                    </select>
+                    <small>AI selected: {{ condition }} • Item type: {{ item_type }}</small>
                 </div>
 
                 <div class="form-group">
