@@ -572,6 +572,14 @@
                         <button type="button" class="remove-btn" data-box-index="${boxIndex}">✕</button>
                         <span class="image-number">#${boxIndex + 1}</span>
                     `;
+
+                    // Add remove button handler immediately after creating it
+                    const removeBtn = box.querySelector('.remove-btn');
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        removeImage(boxIndex);
+                    });
                 };
                 reader.readAsDataURL(file);
 
@@ -589,15 +597,6 @@
                 box.addEventListener('touchend', handleTouchEnd, { passive: false });
 
                 previewGrid.appendChild(box);
-            });
-
-            // Add remove button handlers
-            document.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const boxIndex = parseInt(btn.dataset.boxIndex);
-                    removeImage(boxIndex);
-                });
             });
         }
 
