@@ -4,316 +4,477 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview Listing - eBay Lister</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400,700&family=Bangers&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            background: #FFE600;
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
+            min-height: 100vh;
             padding: 20px;
-            line-height: 1.6;
+            color: #333;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            background: #00A651;
+            border: 5px solid #000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 8px 8px 0 #000;
+            position: relative;
+        }
+
+        .header h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 2.8em;
+            color: #FFF;
+            text-shadow: 4px 4px 0 #000;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #FFF;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .trophy-badge {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #F5AF02;
+            border: 4px solid #000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            box-shadow: 4px 4px 0 #000;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.1); }
+        }
+
+        .warning-banner {
+            background: linear-gradient(180deg, #FFE8E8 0%, #FFF 100%);
+            border: 5px solid #E53238;
+            color: #8B0000;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            box-shadow: 6px 6px 0 #000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 6px 6px 0 #000; }
+            50% { box-shadow: 8px 8px 0 rgba(0,0,0,0.7); }
+        }
+
+        .main-card {
+            background: #FFF;
+            border: 5px solid #000;
+            border-radius: 15px;
+            box-shadow: 8px 8px 0 #000;
+            margin-bottom: 25px;
             overflow: hidden;
         }
-        .header {
-            background: #0064d2;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        .header p {
-            opacity: 0.9;
-        }
-        .warning-banner {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: 500;
-        }
+
         .listing-preview {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             padding: 30px;
         }
+
         @media (max-width: 768px) {
             .listing-preview {
                 grid-template-columns: 1fr;
             }
         }
+
         .images-section {
-            background: #fafafa;
+            background: linear-gradient(180deg, #F0F8FF 0%, #FFF 100%);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 4px dashed #0064D2;
         }
+
         .main-image {
             width: 100%;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 4px solid #0064D2;
+            box-shadow: 4px 4px 0 #000;
         }
+
         .thumbnail-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
+            gap: 12px;
         }
+
         .thumbnail {
             width: 100%;
             height: 80px;
             object-fit: cover;
-            border-radius: 3px;
+            border-radius: 8px;
             cursor: pointer;
-            border: 2px solid transparent;
-            transition: border-color 0.2s;
+            border: 4px solid #000;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0 #000;
         }
-        .thumbnail:hover, .thumbnail.active {
-            border-color: #0064d2;
+
+        .thumbnail:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #000;
         }
+
+        .thumbnail.active {
+            border-color: #F5AF02;
+            box-shadow: 0 0 15px rgba(245, 175, 2, 0.8);
+        }
+
         .details-section h2 {
-            color: #333;
-            font-size: 22px;
+            color: #E53238;
+            font-size: 1.8em;
+            font-weight: 700;
             margin-bottom: 20px;
             line-height: 1.3;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
+
         .price {
-            font-size: 32px;
-            font-weight: bold;
-            color: #e53238;
-            margin-bottom: 20px;
+            font-family: 'Bangers', cursive;
+            font-size: 3em;
+            font-weight: 700;
+            color: #00A651;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            letter-spacing: 1px;
         }
+
         .info-row {
             display: flex;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
+            padding: 15px;
+            border-bottom: 3px dashed #DDD;
+            background: linear-gradient(90deg, #F9F9F9 0%, #FFF 100%);
+            margin-bottom: 5px;
+            border-radius: 5px;
         }
+
         .info-label {
-            font-weight: 600;
-            color: #555;
+            font-weight: 700;
+            color: #0064D2;
             width: 140px;
             flex-shrink: 0;
+            font-size: 1.1em;
         }
+
         .info-value {
             color: #333;
             flex: 1;
+            font-weight: 600;
         }
+
         .description-section {
             padding: 30px;
-            border-top: 1px solid #eee;
+            border-top: 5px solid #000;
+            background: linear-gradient(180deg, #FFF 0%, #F9F9F9 100%);
         }
+
         .description-section h3 {
-            color: #333;
-            margin-bottom: 15px;
+            color: #E53238;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
+
         .description-content {
-            background: #fafafa;
-            padding: 20px;
-            border-radius: 5px;
+            background: #FFF;
+            padding: 25px;
+            border-radius: 10px;
+            border: 4px solid #0064D2;
             white-space: pre-wrap;
-            font-size: 14px;
+            font-size: 1.05em;
             line-height: 1.8;
             max-height: 400px;
             overflow-y: auto;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            font-weight: 600;
         }
+
         .aspects-section {
-            padding: 0 30px 30px;
+            padding: 30px;
+            background: linear-gradient(180deg, #F9F9F9 0%, #FFF 100%);
         }
+
         .aspects-section h3 {
-            color: #333;
-            margin-bottom: 15px;
+            color: #E53238;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
+
         .aspects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
+            gap: 12px;
         }
+
         .aspect-item {
-            background: #f0f0f0;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
+            background: linear-gradient(180deg, #E8F4FF 0%, #FFF 100%);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            border: 3px solid #0064D2;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
         }
+
         .aspect-key {
-            font-weight: 600;
-            color: #555;
+            font-weight: 700;
+            color: #0064D2;
+            display: block;
+            margin-bottom: 5px;
         }
+
         .aspect-value {
             color: #333;
+            font-weight: 600;
         }
+
         .action-buttons {
             padding: 30px;
-            background: #f9f9f9;
+            background: linear-gradient(180deg, #FFE600 0%, #F5D600 100%);
+            border-top: 5px solid #000;
             display: flex;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
         }
+
         .btn {
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            border: none;
-            border-radius: 25px;
+            padding: 20px 50px;
+            font-size: 1.5em;
+            font-weight: 700;
+            border: 5px solid #000;
+            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            box-shadow: 6px 6px 0 #000;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
         }
+
         .btn-publish {
-            background: #00a651;
+            background: linear-gradient(180deg, #00A651 0%, #008C44 100%);
             color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
+
         .btn-publish:hover {
-            background: #008c44;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,166,81,0.4);
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 #000;
         }
-        .btn-edit {
-            background: #0064d2;
-            color: white;
+
+        .btn-publish:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 #000;
         }
-        .btn-edit:hover {
-            background: #0054b3;
-        }
+
         .btn-cancel {
-            background: #6c757d;
+            background: linear-gradient(180deg, #E53238 0%, #B5282D 100%);
             color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
+
         .btn-cancel:hover {
-            background: #5a6268;
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 #000;
         }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
+            background: #999;
         }
+
         .status-message {
             text-align: center;
-            padding: 20px;
-            margin: 20px 30px;
-            border-radius: 5px;
+            padding: 25px;
+            margin: 25px 30px;
+            border-radius: 15px;
             display: none;
+            font-weight: 700;
+            font-size: 1.2em;
+            box-shadow: 6px 6px 0 #000;
         }
+
         .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: linear-gradient(180deg, #90EE90 0%, #98FB98 100%);
+            color: #006400;
+            border: 5px solid #00A651;
         }
+
+        .status-success a {
+            color: #006400;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
         .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: linear-gradient(180deg, #FFB6C1 0%, #FFC0CB 100%);
+            color: #8B0000;
+            border: 5px solid #E53238;
         }
+
         .sku-info {
-            font-size: 12px;
-            color: #888;
-            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 15px;
+            padding: 10px;
+            background: #F9F9F9;
+            border-radius: 8px;
+            border: 2px dashed #999;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .price {
+                font-size: 2.2em;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 18px 30px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Preview Your Listing</h1>
-            <p>Review all details before publishing to eBay</p>
+            <div class="trophy-badge">🏆</div>
+            <h1>🎉 PREVIEW YOUR LISTING! 🎉</h1>
+            <p>Almost There! Check It Out Before Going LIVE!</p>
         </div>
 
         <div class="warning-banner">
-            This listing will go LIVE on eBay once published. Buyers will be able to purchase immediately.
+            ⚠️ HEADS UP! This listing will go LIVE on eBay once published! Buyers can purchase immediately! ⚠️
         </div>
 
         <div id="statusMessage" class="status-message"></div>
 
-        <div class="listing-preview">
-            <div class="images-section">
-                <img id="mainImage" class="main-image" src="{{ image_urls[0] }}" alt="Product image">
-                {% if image_urls|length > 1 %}
-                <div class="thumbnail-grid">
-                    {% for url in image_urls %}
-                    <img class="thumbnail {% if loop.first %}active{% endif %}" src="{{ url }}" alt="Thumbnail {{ loop.index }}" onclick="selectImage(this, '{{ url }}')">
+        <div class="main-card">
+            <div class="listing-preview">
+                <div class="images-section">
+                    <img id="mainImage" class="main-image" src="{{ image_urls[0] }}" alt="Product image">
+                    {% if image_urls|length > 1 %}
+                    <div class="thumbnail-grid">
+                        {% for url in image_urls %}
+                        <img class="thumbnail {% if loop.first %}active{% endif %}" src="{{ url }}" alt="Thumbnail {{ loop.index }}" onclick="selectImage(this, '{{ url }}')">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="details-section">
+                    <h2>{{ title }}</h2>
+                    <div class="price">£{{ "%.2f"|format(price) }}</div>
+
+                    <div class="info-row">
+                        <span class="info-label">⭐ Condition:</span>
+                        <span class="info-value">{{ condition }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">🏷️ Item Type:</span>
+                        <span class="info-value">{{ category_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📂 Category ID:</span>
+                        <span class="info-value">{{ category_id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📦 Quantity:</span>
+                        <span class="info-value">{{ quantity }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">💳 Format:</span>
+                        <span class="info-value">Fixed Price (Buy It Now)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">🌍 Marketplace:</span>
+                        <span class="info-value">{{ marketplace }}</span>
+                    </div>
+                    {% if brand %}
+                    <div class="info-row">
+                        <span class="info-label">🏭 Brand:</span>
+                        <span class="info-value">{{ brand }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="sku-info">🔖 SKU: {{ sku }} • 🎫 Offer ID: {{ offer_id }}</div>
+                </div>
+            </div>
+
+            <div class="description-section">
+                <h3>📄 Item Description</h3>
+                <div class="description-content">{{ description }}</div>
+            </div>
+
+            {% if aspects %}
+            <div class="aspects-section">
+                <h3>🎯 Item Specifics</h3>
+                <div class="aspects-grid">
+                    {% for key, values in aspects.items() %}
+                    <div class="aspect-item">
+                        <span class="aspect-key">{{ key }}</span>
+                        <span class="aspect-value">{{ values|join(', ') }}</span>
+                    </div>
                     {% endfor %}
                 </div>
-                {% endif %}
             </div>
+            {% endif %}
 
-            <div class="details-section">
-                <h2>{{ title }}</h2>
-                <div class="price">{{ currency }} {{ "%.2f"|format(price) }}</div>
-
-                <div class="info-row">
-                    <span class="info-label">Condition:</span>
-                    <span class="info-value">{{ condition }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Item Type:</span>
-                    <span class="info-value">{{ category_name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Category ID:</span>
-                    <span class="info-value">{{ category_id }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Quantity:</span>
-                    <span class="info-value">{{ quantity }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Format:</span>
-                    <span class="info-value">Fixed Price (Buy It Now)</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Marketplace:</span>
-                    <span class="info-value">{{ marketplace }}</span>
-                </div>
-                {% if brand %}
-                <div class="info-row">
-                    <span class="info-label">Brand:</span>
-                    <span class="info-value">{{ brand }}</span>
-                </div>
-                {% endif %}
-
-                <div class="sku-info">SKU: {{ sku }} | Offer ID: {{ offer_id }}</div>
+            <div class="action-buttons">
+                <button id="publishBtn" class="btn btn-publish" onclick="publishListing()">
+                    🚀 PUBLISH TO eBAY! 🚀
+                </button>
+                <button class="btn btn-cancel" onclick="window.location.href='/'">
+                    ❌ Cancel & Start Over
+                </button>
             </div>
-        </div>
-
-        <div class="description-section">
-            <h3>Item Description</h3>
-            <div class="description-content">{{ description }}</div>
-        </div>
-
-        {% if aspects %}
-        <div class="aspects-section">
-            <h3>Item Specifics</h3>
-            <div class="aspects-grid">
-                {% for key, values in aspects.items() %}
-                <div class="aspect-item">
-                    <span class="aspect-key">{{ key }}:</span>
-                    <span class="aspect-value">{{ values|join(', ') }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="action-buttons">
-            <button id="publishBtn" class="btn btn-publish" onclick="publishListing()">
-                Publish to eBay
-            </button>
-            <button class="btn btn-cancel" onclick="window.location.href='/'">
-                Cancel & Start Over
-            </button>
         </div>
     </div>
 
@@ -329,7 +490,7 @@
             const statusDiv = document.getElementById('statusMessage');
 
             btn.disabled = true;
-            btn.textContent = 'Publishing...';
+            btn.textContent = '📡 Publishing...';
             statusDiv.style.display = 'none';
 
             fetch('/publish', {
@@ -357,24 +518,24 @@
                 if (data.success) {
                     statusDiv.className = 'status-message status-success';
                     statusDiv.innerHTML = `
-                        <strong>Successfully Published!</strong><br>
-                        Your listing is now LIVE on eBay.<br>
-                        Listing ID: ${data.listing_id}<br>
-                        <a href="${data.listing_url}" target="_blank" style="color: #155724; font-weight: bold;">View on eBay</a>
+                        <strong>🎉 SUCCESSFULLY PUBLISHED! 🎉</strong><br><br>
+                        Your listing is now LIVE on eBay!<br>
+                        Listing ID: ${data.listing_id}<br><br>
+                        <a href="${data.listing_url}" target="_blank">👉 VIEW ON eBAY 👈</a>
                     `;
                     statusDiv.style.display = 'block';
-                    btn.textContent = 'Published!';
-                    btn.style.background = '#28a745';
+                    btn.textContent = '✅ PUBLISHED!';
+                    btn.style.background = 'linear-gradient(180deg, #28a745 0%, #218838 100%)';
                 } else {
                     throw new Error(data.error || 'Publishing failed');
                 }
             })
             .catch(error => {
                 statusDiv.className = 'status-message status-error';
-                statusDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                statusDiv.innerHTML = `<strong>❌ ERROR!</strong><br>${error.message}`;
                 statusDiv.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = 'Publish to eBay';
+                btn.textContent = '🚀 PUBLISH TO eBAY! 🚀';
             });
         }
     </script>
