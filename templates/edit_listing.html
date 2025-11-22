@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Listing - eBay Lister</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400,700&family=Bangers&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,40 +13,100 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            background: #FFE600;
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
             min-height: 100vh;
             padding: 20px;
             color: #333;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            background: #0064D2;
+            border: 5px solid #000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 8px 8px 0 #000;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 2em;
+            font-family: 'Bangers', cursive;
+            font-size: 2.5em;
+            color: #FFF;
+            text-shadow: 4px 4px 0 #000;
+            letter-spacing: 2px;
             margin-bottom: 10px;
         }
 
         .header p {
-            font-size: 1em;
-            opacity: 0.9;
+            font-size: 1.2em;
+            color: #FFF;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .pencil-badge {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #F5AF02;
+            border: 4px solid #000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 4px 4px 0 #000;
+            animation: wiggle 3s ease-in-out infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
         }
 
         .card {
-            background: white;
-            border-radius: 20px;
+            background: #FFF;
+            border: 5px solid #000;
+            border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 8px 8px 0 #000;
             margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: linear-gradient(180deg, #E8F4FF 0%, #FFF 100%);
+            border: 4px solid #0064D2;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 4px 4px 0 rgba(0, 100, 210, 0.3);
+            font-weight: 600;
+        }
+
+        .info-box strong {
+            color: #0064D2;
+            font-size: 1.2em;
+        }
+
+        h3 {
+            color: #E53238;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
 
         .image-preview {
@@ -59,8 +120,15 @@
             width: 100%;
             aspect-ratio: 1;
             object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: 4px solid #0064D2;
+            box-shadow: 3px 3px 0 #000;
+            transition: transform 0.2s;
+        }
+
+        .image-preview img:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #000;
         }
 
         .form-group {
@@ -69,10 +137,11 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 0.95em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #E53238;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
         }
 
         .form-group input[type="text"],
@@ -80,19 +149,23 @@
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-            transition: border-color 0.3s;
+            padding: 15px;
+            border: 4px solid #000;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-family: 'Comic Neue', cursive;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
         }
 
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0064D2;
+            transform: translateY(-2px);
+            box-shadow: 4px 6px 0 rgba(0,0,0,0.3);
         }
 
         .form-group textarea {
@@ -102,105 +175,148 @@
 
         .form-group small {
             display: block;
-            margin-top: 5px;
-            color: #999;
-            font-size: 0.85em;
+            margin-top: 8px;
+            color: #666;
+            font-size: 0.95em;
+            font-weight: 600;
         }
 
         .char-count {
             text-align: right;
             margin-top: 5px;
-            font-size: 0.85em;
-            color: #999;
+            font-size: 0.95em;
+            color: #666;
+            font-weight: 700;
         }
 
         .char-count.warning {
-            color: #f39c12;
+            color: #F5AF02;
+            animation: pulse 1s infinite;
         }
 
         .char-count.error {
-            color: #e74c3c;
+            color: #E53238;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         .aspects-container {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            background: #f9f9f9;
+            border: 4px dashed #0064D2;
+            border-radius: 10px;
+            padding: 20px;
+            background: linear-gradient(180deg, #FFF 0%, #F0F8FF 100%);
         }
 
         .aspect-row {
             display: grid;
             grid-template-columns: 1fr 2fr auto;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             align-items: center;
         }
 
         .aspect-row input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9em;
+            padding: 10px;
+            border: 3px solid #000;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Comic Neue', cursive;
+            font-weight: 600;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
         }
 
         .aspect-row button {
-            padding: 8px 12px;
-            background: #e74c3c;
+            padding: 10px 15px;
+            background: linear-gradient(180deg, #E53238 0%, #B5282D 100%);
             color: white;
-            border: none;
-            border-radius: 5px;
+            border: 3px solid #000;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9em;
+            font-weight: 700;
+            box-shadow: 3px 3px 0 #000;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        .aspect-row button:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0 #000;
         }
 
         .add-aspect-btn {
             width: 100%;
-            padding: 10px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            padding: 12px;
+            background: linear-gradient(180deg, #F5AF02 0%, #D49602 100%);
+            color: #000;
+            border: 4px solid #000;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.9em;
-            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-top: 15px;
+            box-shadow: 4px 4px 0 #000;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        .add-aspect-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #000;
         }
 
         .button-group {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 2fr;
             gap: 15px;
             margin-top: 30px;
         }
 
         .btn {
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
+            padding: 18px;
+            border: 5px solid #000;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
+            box-shadow: 6px 6px 0 #000;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #E53238 0%, #B5282D 100%);
             color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
 
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: linear-gradient(180deg, #FFF 0%, #E0E0E0 100%);
+            color: #333;
+            border: 4px solid #000;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 #000;
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 #000;
         }
 
         .btn:disabled {
-            background: #ccc;
+            background: #CCC;
             cursor: not-allowed;
             transform: none;
         }
@@ -208,37 +324,38 @@
         .loading {
             display: none;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 6px solid #FFF;
+            border-top: 6px solid #E53238;
+            border-right: 6px solid #0064D2;
+            border-bottom: 6px solid #F5AF02;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
+            box-shadow: 4px 4px 0 #000;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .info-box {
-            background: #e8f4f8;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .info-box strong {
-            color: #2980b9;
+        .loading p {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
         }
 
         @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
             .card {
                 padding: 20px;
             }
@@ -260,61 +377,62 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>✏️ Edit Your Listing</h1>
-            <p>Review and modify the AI-generated listing before creating</p>
+            <div class="pencil-badge">✏️</div>
+            <h1>✨ EDIT YOUR LISTING ✨</h1>
+            <p>Review & Perfect Your AI-Generated Listing!</p>
         </div>
 
         <div class="card">
             <div class="info-box">
-                <strong>ℹ️ Review AI Results</strong><br>
-                The AI has analyzed your images and generated this listing. Edit anything you'd like before creating the draft.
+                <strong>🤖 AI Has Done The Work!</strong><br>
+                Review the listing below and make any changes you'd like. The AI has analyzed your photos and created this awesome listing for you!
             </div>
 
-            <h3 style="margin-bottom: 15px;">📸 Images ({{ image_urls|length }})</h3>
+            <h3>📸 Your Images ({{ image_urls|length }})</h3>
             <div class="image-preview">
                 {% for image_url in image_urls %}
-                <img src="{{ image_url }}" alt="Product Image {{ loop.index }}">
+                <img src="{{ image_url }}" alt="Product Image {{ loop.index }}" title="Image #{{ loop.index }}">
                 {% endfor %}
             </div>
 
             <form id="editForm">
                 <div class="form-group">
-                    <label for="title">Title *</label>
+                    <label for="title">📝 Title *</label>
                     <input type="text" id="title" value="{{ title }}" maxlength="80" required>
                     <div class="char-count" id="titleCount">0 / 80 characters</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="description">Description *</label>
+                    <label for="description">📄 Description *</label>
                     <textarea id="description" required>{{ description }}</textarea>
-                    <small>Include measurements, condition details, and any flaws</small>
+                    <small>💡 Include measurements, condition details, and any flaws</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="price">Price (GBP) *</label>
+                    <label for="price">💰 Price (GBP) *</label>
                     <input type="number" id="price" value="{{ price }}" step="0.01" min="0.99" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="category">Category ID</label>
+                    <label for="category">🏷️ Category ID</label>
                     <input type="text" id="category" value="{{ category_id }}">
                     <small>{{ category_name }}</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="condition">Condition *</label>
+                    <label for="condition">⭐ Condition *</label>
                     <select id="condition" required>
                         {% set condition_labels = {
-                            'NEW': 'New',
-                            'NEW_OTHER': 'New (Other)',
-                            'NEW_WITH_DEFECTS': 'New with Defects',
-                            'LIKE_NEW': 'Like New',
-                            'PRE_OWNED_EXCELLENT': 'Pre-owned - Excellent',
-                            'USED_EXCELLENT': 'Used - Excellent / Good',
-                            'USED_VERY_GOOD': 'Used - Very Good',
-                            'USED_GOOD': 'Used - Good',
-                            'PRE_OWNED_FAIR': 'Pre-owned - Fair',
-                            'USED_ACCEPTABLE': 'Used - Acceptable'
+                            'NEW': '🆕 New',
+                            'NEW_OTHER': '✨ New (Other)',
+                            'NEW_WITH_DEFECTS': '⚠️ New with Defects',
+                            'LIKE_NEW': '💎 Like New',
+                            'PRE_OWNED_EXCELLENT': '👍 Pre-owned - Excellent',
+                            'USED_EXCELLENT': '✅ Used - Excellent / Good',
+                            'USED_VERY_GOOD': '😊 Used - Very Good',
+                            'USED_GOOD': '👌 Used - Good',
+                            'PRE_OWNED_FAIR': '📦 Pre-owned - Fair',
+                            'USED_ACCEPTABLE': '🆗 Used - Acceptable'
                         } %}
                         {% for cond_value in valid_conditions %}
                             {% if cond_value in condition_labels %}
@@ -324,15 +442,15 @@
                             {% endif %}
                         {% endfor %}
                     </select>
-                    <small>AI selected: {{ condition }} • Item type: {{ item_type }} • Showing {{ valid_conditions|length }} valid option(s)</small>
+                    <small>🤖 AI selected: {{ condition }} • Item type: {{ item_type }} • {{ valid_conditions|length }} option(s) available</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Item Specifics</label>
+                    <label>🎯 Item Specifics</label>
                     <div class="aspects-container" id="aspectsContainer">
                         <!-- Aspects will be populated by JavaScript -->
                     </div>
-                    <button type="button" class="add-aspect-btn" onclick="addAspect()">+ Add Item Specific</button>
+                    <button type="button" class="add-aspect-btn" onclick="addAspect()">➕ Add Item Specific</button>
                 </div>
 
                 <div class="button-group">
@@ -340,14 +458,14 @@
                         ← Start Over
                     </button>
                     <button type="submit" class="btn btn-primary" id="submitBtn">
-                        🚀 Create Draft Listing
+                        🚀 CREATE DRAFT LISTING! 🚀
                     </button>
                 </div>
             </form>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Creating draft listing on eBay...</p>
+                <p>Creating your awesome eBay draft...</p>
             </div>
         </div>
     </div>
@@ -398,7 +516,7 @@
             row.innerHTML = `
                 <input type="text" placeholder="Name (e.g., Brand)" value="${key}" class="aspect-key">
                 <input type="text" placeholder="Value (e.g., Nike)" value="${value}" class="aspect-value">
-                <button type="button" onclick="this.parentElement.remove()">Remove</button>
+                <button type="button" onclick="this.parentElement.remove()">✕ Remove</button>
             `;
             aspectsContainer.appendChild(row);
         }
