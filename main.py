@@ -261,7 +261,18 @@ def edit_listing():
     if not draft_data:
         return redirect(url_for('index'))
 
-    return render_template('edit_listing.html', **draft_data)
+    # Get valid conditions for this item type
+    item_type = draft_data.get('item_type', 'general')
+    rules = get_item_type_rules(item_type)
+
+    # Extract unique condition values from condition_mapping
+    valid_conditions = list(set(rules['condition_mapping'].values()))
+
+    # Add valid conditions to the template data
+    template_data = dict(draft_data)
+    template_data['valid_conditions'] = valid_conditions
+
+    return render_template('edit_listing.html', **template_data)
 
 
 @app.route("/create-listing", methods=["POST"])
