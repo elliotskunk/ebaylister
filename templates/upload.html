@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eBay Lister - Upload & List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400,700&family=Bangers&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,75 +13,124 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            background: #FFE600;
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
             min-height: 100vh;
             padding: 20px;
             color: #333;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 750px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            background: #E53238;
+            border: 5px solid #000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 8px 8px 0 #000;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 2em;
+            font-family: 'Bangers', cursive;
+            font-size: 3em;
+            color: #FFF;
+            text-shadow: 4px 4px 0 #000;
+            letter-spacing: 2px;
             margin-bottom: 10px;
         }
 
         .header p {
-            font-size: 1em;
-            opacity: 0.9;
+            font-size: 1.2em;
+            color: #FFF;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .star-badge {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #F5AF02;
+            border: 4px solid #000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 4px 4px 0 #000;
+            animation: spin 20s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .card {
-            background: white;
-            border-radius: 20px;
+            background: #FFF;
+            border: 5px solid #000;
+            border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 8px 8px 0 #000;
             margin-bottom: 20px;
         }
 
         .upload-area {
-            border: 3px dashed #ccc;
+            border: 5px dashed #0064D2;
             border-radius: 15px;
-            padding: 40px 20px;
+            padding: 50px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f9f9f9;
+            transition: all 0.2s ease;
+            background: linear-gradient(180deg, #FFF 0%, #E8F4FF 100%);
+            position: relative;
         }
 
         .upload-area:hover {
-            border-color: #667eea;
-            background: #f0f0ff;
+            border-color: #E53238;
+            background: linear-gradient(180deg, #FFE8E8 0%, #FFF 100%);
+            transform: translateY(-3px);
         }
 
         .upload-area.dragover {
-            border-color: #667eea;
-            background: #e8e8ff;
+            border-color: #F5AF02;
+            background: #FFFACD;
+            transform: scale(1.02);
         }
 
         .upload-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
+            font-size: 70px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .upload-area h3 {
-            margin-bottom: 10px;
-            color: #667eea;
+            margin-bottom: 15px;
+            color: #E53238;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
 
         .upload-area p {
-            color: #666;
-            font-size: 0.9em;
+            color: #333;
+            font-size: 1.1em;
+            font-weight: 600;
         }
 
         #imageInput {
@@ -88,15 +138,15 @@
         }
 
         .preview-container {
-            margin-top: 20px;
+            margin-top: 25px;
             display: none;
         }
 
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .preview-item {
@@ -104,24 +154,27 @@
             aspect-ratio: 1;
             border-radius: 10px;
             overflow: hidden;
-            background: #f0f0f0;
+            background: #F0F0F0;
             cursor: move;
             transition: transform 0.2s, box-shadow 0.2s;
+            border: 4px solid #0064D2;
+            box-shadow: 4px 4px 0 #000;
         }
 
         .preview-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translate(-3px, -3px);
+            box-shadow: 7px 7px 0 #000;
         }
 
         .preview-item.dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
+            opacity: 0.6;
+            transform: scale(0.95) rotate(5deg);
+            border-color: #F5AF02;
         }
 
         .preview-item.drag-over {
-            border: 3px solid #667eea;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            border: 4px solid #E53238;
+            box-shadow: 0 0 20px rgba(229, 50, 56, 0.6);
         }
 
         .preview-item img {
@@ -134,90 +187,116 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background: rgba(255, 0, 0, 0.8);
+            background: #E53238;
             color: white;
-            border: none;
+            border: 3px solid #000;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .preview-item .remove-btn:hover {
+            background: #FF0000;
+            transform: scale(1.1);
         }
 
         .preview-item .image-number {
             position: absolute;
             bottom: 5px;
             left: 5px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            background: #F5AF02;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 3px solid #000;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
 
         .image-count {
             text-align: center;
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 10px;
+            color: #E53238;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #0064D2;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
+            padding: 15px;
+            border: 4px solid #000;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-family: 'Comic Neue', cursive;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #E53238;
+            transform: translateY(-2px);
+            box-shadow: 4px 6px 0 rgba(0,0,0,0.3);
         }
 
         .form-group small {
             display: block;
-            margin-top: 5px;
-            color: #999;
-            font-size: 0.85em;
+            margin-top: 8px;
+            color: #666;
+            font-size: 0.95em;
+            font-weight: 600;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            background: linear-gradient(180deg, #E53238 0%, #B5282D 100%);
             color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
+            border: 5px solid #000;
+            border-radius: 15px;
+            font-size: 1.5em;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
+            box-shadow: 6px 6px 0 #000;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
 
         .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 #000;
+            background: linear-gradient(180deg, #FF3940 0%, #E53238 100%);
         }
 
         .submit-btn:active {
-            transform: translateY(0);
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 #000;
         }
 
         .submit-btn:disabled {
-            background: #ccc;
+            background: #CCC;
             cursor: not-allowed;
             transform: none;
         }
@@ -225,98 +304,97 @@
         .loading {
             display: none;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 6px solid #FFF;
+            border-top: 6px solid #E53238;
+            border-right: 6px solid #0064D2;
+            border-bottom: 6px solid #F5AF02;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
+            box-shadow: 4px 4px 0 #000;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading p {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
         }
 
         .result {
             display: none;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            background: #90EE90;
+            border: 5px solid #000;
+            color: #006400;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 6px 6px 0 #000;
+            font-weight: 700;
         }
 
         .error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            background: #FFB6C1;
+            border: 5px solid #000;
+            color: #8B0000;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 6px 6px 0 #000;
+            font-weight: 700;
         }
 
-        .result-details {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-
-        .result-details h4 {
-            margin-bottom: 10px;
-            color: #667eea;
-        }
-
-        .result-item {
-            margin-bottom: 8px;
-            padding: 8px;
-            background: white;
-            border-radius: 5px;
-        }
-
-        .result-item strong {
-            color: #555;
-        }
-
-        .new-upload-btn {
+        .new-upload-btn, .add-more-btn {
             width: 100%;
-            padding: 12px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
+            padding: 15px;
+            background: linear-gradient(180deg, #0064D2 0%, #004A99 100%);
+            color: white;
+            border: 4px solid #000;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 700;
             cursor: pointer;
             margin-top: 15px;
+            box-shadow: 5px 5px 0 #000;
+            font-family: 'Comic Neue', cursive;
         }
 
         .add-more-btn {
-            width: 100%;
-            padding: 10px;
-            background: #f0f0ff;
-            color: #667eea;
-            border: 2px dashed #667eea;
-            border-radius: 8px;
-            font-size: 0.95em;
-            cursor: pointer;
+            background: linear-gradient(180deg, #F5AF02 0%, #D49602 100%);
+            color: #000;
             margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .new-upload-btn:hover, .add-more-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 #000;
+        }
+
+        .help-text {
+            text-align: center;
+            color: #E53238;
+            font-size: 1em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #FFF;
+            border: 3px dashed #0064D2;
+            border-radius: 10px;
         }
 
         @media (max-width: 600px) {
             .header h1 {
-                font-size: 1.5em;
+                font-size: 2em;
             }
 
             .card {
@@ -328,7 +406,8 @@
             }
 
             .preview-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+                gap: 10px;
             }
         }
     </style>
@@ -336,54 +415,55 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 eBay Lister</h1>
-            <p>Upload multiple images, analyze with AI, and create optimized listings</p>
+            <div class="star-badge">⭐</div>
+            <h1>🔥 eBay LISTER 🔥</h1>
+            <p>AI-Powered • Lightning Fast • Totally Rad!</p>
         </div>
 
         <div class="card">
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📷</div>
-                    <h3>Upload Product Images</h3>
-                    <p>Click to browse or drag & drop multiple images</p>
-                    <p style="margin-top: 5px; font-size: 0.8em;">Max 12 images • 50MB total • JPG, PNG, WEBP</p>
+                    <h3>Drop Your Pics Here!</h3>
+                    <p>Click to browse or drag & drop</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">📦 Max 12 images • 200MB total</p>
                 </div>
                 <input type="file" id="imageInput" name="images" accept="image/*" multiple required>
 
                 <div class="preview-container" id="previewContainer">
                     <div class="image-count" id="imageCount">0 images selected</div>
-                    <p style="text-align: center; color: #999; font-size: 0.85em; margin-bottom: 10px;">💡 Drag images to reorder • First image will be the main photo</p>
+                    <p class="help-text">💡 Drag images to swap positions • #1 = Main Photo!</p>
                     <div class="preview-grid" id="previewGrid"></div>
-                    <button type="button" class="add-more-btn" id="addMoreBtn">+ Add More Images</button>
-                    <button type="button" class="new-upload-btn" id="clearAllBtn">Clear All Images</button>
+                    <button type="button" class="add-more-btn" id="addMoreBtn">➕ Add More Images</button>
+                    <button type="button" class="new-upload-btn" id="clearAllBtn" style="background: linear-gradient(180deg, #E53238 0%, #B5282D 100%);">🗑️ Clear All</button>
                 </div>
 
                 <div class="form-group">
-                    <label for="titleOverride">Title Override (optional)</label>
-                    <input type="text" id="titleOverride" name="title_override" maxlength="80" placeholder="Leave blank to use AI-generated title">
-                    <small>AI will generate an SEO-optimized title from all images. Override only if needed.</small>
+                    <label for="titleOverride">📝 Custom Title (optional)</label>
+                    <input type="text" id="titleOverride" name="title_override" maxlength="80" placeholder="Leave blank - AI will write an awesome title!">
+                    <small>🤖 AI writes SEO-optimized titles. Override only if needed!</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="priceOverride">Price Override (optional)</label>
-                    <input type="number" id="priceOverride" name="price_override" step="0.01" min="0.99" placeholder="Leave blank to use AI-suggested price">
-                    <small>AI will suggest a competitive price. Override if you prefer.</small>
+                    <label for="priceOverride">💰 Set Your Price (optional)</label>
+                    <input type="number" id="priceOverride" name="price_override" step="0.01" min="0.99" placeholder="AI will suggest the best price!">
+                    <small>💡 AI analyzes similar items to suggest competitive pricing</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoryOverride">Category ID Override (optional)</label>
-                    <input type="text" id="categoryOverride" name="category_id" placeholder="Leave blank for auto-detection">
-                    <small>AI will auto-select the best category. Provide eBay category ID if needed.</small>
+                    <label for="categoryOverride">🏷️ Category ID (optional)</label>
+                    <input type="text" id="categoryOverride" name="category_id" placeholder="AI auto-detects the perfect category">
+                    <small>🎯 AI picks the best category automatically</small>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">
-                    🚀 Analyze & Create Draft Listing
+                    🚀 ANALYZE & CREATE LISTING! 🚀
                 </button>
             </form>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p id="loadingText">Processing images...</p>
+                <p id="loadingText">Processing your awesome pics...</p>
             </div>
 
             <div class="result" id="result"></div>
@@ -688,11 +768,11 @@
             result.style.display = 'none';
 
             const loadingSteps = [
-                'Processing images...',
-                `Analyzing ${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} with AI...`,
-                'Uploading to eBay Picture Service...',
-                'Determining best category...',
-                'Creating draft listing...'
+                '📸 Processing images...',
+                `🤖 AI analyzing ${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''}...`,
+                '☁️ Uploading to eBay Picture Service...',
+                '🎯 Finding the perfect category...',
+                '✨ Creating your amazing listing...'
             ];
 
             let stepIndex = 0;
@@ -712,9 +792,9 @@
 
                 clearInterval(loadingInterval);
 
-                // Check if we were redirected to preview page (success case)
-                if (response.redirected || response.url.includes('/preview')) {
-                    // Redirect the browser to the preview page
+                // Check if we were redirected to edit page (success case)
+                if (response.redirected || response.url.includes('/edit-listing')) {
+                    // Redirect the browser to the edit page
                     window.location.href = response.url;
                     return;
                 }
@@ -733,27 +813,16 @@
                 if (response.ok && data.success) {
                     result.innerHTML = `
                         <div class="success">
-                            <strong>✅ Success!</strong> Draft listing created with ${data.image_count} image${data.image_count !== 1 ? 's' : ''}!
+                            <strong>✅ AWESOME!</strong> Draft listing created with ${data.image_count} image${data.image_count !== 1 ? 's' : ''}!
                         </div>
-                        <div class="result-details">
-                            <h4>Listing Details</h4>
-                            <div class="result-item"><strong>Title:</strong> ${data.title}</div>
-                            <div class="result-item"><strong>Price:</strong> £${data.price.toFixed(2)}</div>
-                            <div class="result-item"><strong>Category ID:</strong> ${data.category_id}</div>
-                            <div class="result-item"><strong>Condition:</strong> ${data.condition}</div>
-                            <div class="result-item"><strong>Images:</strong> ${data.image_count}</div>
-                            <div class="result-item"><strong>SKU:</strong> ${data.sku}</div>
-                            <div class="result-item"><strong>Offer ID:</strong> ${data.offer_id}</div>
-                            ${data.note ? `<div class="result-item" style="margin-top: 15px; color: #856404; background: #fff3cd; border: 1px solid #ffeeba;">ℹ️ ${data.note}</div>` : ''}
-                        </div>
-                        <button class="new-upload-btn" onclick="location.reload()">Upload Another Item</button>
+                        <button class="new-upload-btn" onclick="location.reload()">🔄 Upload Another Item</button>
                     `;
                 } else {
                     result.innerHTML = `
                         <div class="error">
-                            <strong>❌ Error:</strong> ${data.error || 'Unknown error occurred'}
+                            <strong>❌ Oops!</strong> ${data.error || 'Unknown error occurred'}
                         </div>
-                        <button class="new-upload-btn" onclick="location.reload()">Try Again</button>
+                        <button class="new-upload-btn" onclick="location.reload()">🔄 Try Again</button>
                     `;
                 }
             } catch (error) {
@@ -764,7 +833,7 @@
                     <div class="error">
                         <strong>❌ Network Error:</strong> ${error.message}
                     </div>
-                    <button class="new-upload-btn" onclick="location.reload()">Try Again</button>
+                    <button class="new-upload-btn" onclick="location.reload()">🔄 Try Again</button>
                 `;
             } finally {
                 submitBtn.disabled = false;
