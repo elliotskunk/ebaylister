@@ -13,3 +13,63 @@
 2025-09-21 00:59:56,654 WARNING werkzeug ::  * Debugger is active!
 2025-09-21 00:59:56,658 INFO werkzeug ::  * Debugger PIN: 118-157-670
 2025-09-21 01:00:02,036 INFO werkzeug :: 127.0.0.1 - - [21/Sep/2025 01:00:02] "[33mGET / HTTP/1.1[0m" 404 -
+2025-11-20 23:21:11,489 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:11,489 [INFO] ebay_lister - eBay Lister App Starting
+2025-11-20 23:21:11,490 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:11,490 [INFO] ebay_lister - Port: 5001
+2025-11-20 23:21:11,490 [INFO] ebay_lister - Debug: True
+2025-11-20 23:21:11,490 [INFO] ebay_lister - Force Drafts: True
+2025-11-20 23:21:11,490 [INFO] ebay_lister - Default Category: Not set
+2025-11-20 23:21:11,490 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:11,520 [INFO] werkzeug - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.26.201.116:5001
+2025-11-20 23:21:11,521 [INFO] werkzeug - [33mPress CTRL+C to quit[0m
+2025-11-20 23:21:11,523 [INFO] werkzeug -  * Restarting with stat
+2025-11-20 23:21:12,438 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:12,438 [INFO] ebay_lister - eBay Lister App Starting
+2025-11-20 23:21:12,438 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:12,438 [INFO] ebay_lister - Port: 5001
+2025-11-20 23:21:12,438 [INFO] ebay_lister - Debug: True
+2025-11-20 23:21:12,438 [INFO] ebay_lister - Force Drafts: True
+2025-11-20 23:21:12,439 [INFO] ebay_lister - Default Category: Not set
+2025-11-20 23:21:12,439 [INFO] ebay_lister - ============================================================
+2025-11-20 23:21:12,454 [WARNING] werkzeug -  * Debugger is active!
+2025-11-20 23:21:12,459 [INFO] werkzeug -  * Debugger PIN: 125-297-440
+2025-11-20 23:21:14,665 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:14] "GET / HTTP/1.1" 200 -
+2025-11-20 23:21:14,935 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:14] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-20 23:21:22,317 [INFO] ebay_lister - Processing 2 image(s): ['mug 1.png', 'mug 2.png']
+2025-11-20 23:21:22,343 [INFO] ebay_lister - Processed image: (556, 727), 83503 bytes
+2025-11-20 23:21:22,343 [INFO] ebay_lister - Processed image 1/2: mug 1.png
+2025-11-20 23:21:22,357 [INFO] ebay_lister - Processed image: (627, 727), 87656 bytes
+2025-11-20 23:21:22,358 [INFO] ebay_lister - Processed image 2/2: mug 2.png
+2025-11-20 23:21:22,358 [INFO] ebay_lister - Analyzing 2 image(s) with AI...
+2025-11-20 23:21:22,358 [INFO] ai_analyzer - Sending 2 images to gpt-4o-mini for analysis...
+2025-11-20 23:21:31,577 [INFO] httpx - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-20 23:21:31,585 [INFO] ai_analyzer - Successfully analyzed 2 images: Set of 3 Vintage Orla Kiely Style Mugs Retro Flora...
+2025-11-20 23:21:31,585 [INFO] ebay_lister - AI analysis complete: Set of 3 Vintage Orla Kiely Style Mugs Retro Flora...
+2025-11-20 23:21:31,586 [INFO] ebay_lister - Uploading 2 image(s) to eBay Picture Service...
+2025-11-20 23:21:32,322 [INFO] ebay_picture_service - Uploading image 1/2...
+2025-11-20 23:21:32,322 [INFO] ebay_picture_service - Uploading image to EPS: SKU-1763680892-4986_1.jpg (83503 bytes)
+2025-11-20 23:21:33,300 [INFO] ebay_picture_service - Successfully uploaded image to EPS: https://i.ebayimg.com/00/s/NzI3WDU1Ng==/z/BjgAAeSwt~tpH6J9/$_12.JPG?set_id=880000500F
+2025-11-20 23:21:33,302 [INFO] ebay_picture_service - Uploading image 2/2...
+2025-11-20 23:21:33,302 [INFO] ebay_picture_service - Uploading image to EPS: SKU-1763680892-4986_2.jpg (87656 bytes)
+2025-11-20 23:21:33,997 [INFO] ebay_picture_service - Successfully uploaded image to EPS: https://i.ebayimg.com/00/s/NzI3WDYyNw==/z/7V4AAeSwCQBpH6J-/$_12.JPG?set_id=880000500F
+2025-11-20 23:21:34,000 [INFO] ebay_picture_service - Successfully uploaded 2 images to EPS
+2025-11-20 23:21:34,000 [INFO] ebay_lister - Uploaded 2 image(s) to EPS
+2025-11-20 23:21:34,000 [INFO] ebay_lister - Detected item type: kitchenware
+2025-11-20 23:21:34,000 [INFO] ebay_lister - Normalized condition: PRE_OWNED_EXCELLENT -> USED_EXCELLENT
+2025-11-20 23:21:34,001 [INFO] ebay_lister - Applied required aspects for kitchenware: ['Brand', 'Type', 'Size', 'Colour', 'Material', 'Style', 'Fit', 'Era', 'Country/Region of Manufacture', 'Features']
+2025-11-20 23:21:34,001 [INFO] ebay_lister - Using default category for kitchenware: 20693
+2025-11-20 23:21:34,001 [INFO] ebay_lister - Creating inventory item: SKU-1763680892-4986
+2025-11-20 23:21:34,001 [INFO] ebay_lister - Brand from aspects: ['Unbranded']
+2025-11-20 23:21:34,944 [INFO] ebay_lister - Inventory item created: SKU-1763680892-4986
+2025-11-20 23:21:34,944 [INFO] ebay_lister - Creating offer for SKU: SKU-1763680892-4986
+2025-11-20 23:21:35,630 [INFO] ebay_lister - ✅ Draft listing created! Offer ID: 87363885011
+2025-11-20 23:21:35,630 [INFO] ebay_lister - Redirecting to preview page for offer: 87363885011
+2025-11-20 23:21:35,632 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:35] "[32mPOST /upload HTTP/1.1[0m" 302 -
+2025-11-20 23:21:35,644 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:35] "GET /preview HTTP/1.1" 200 -
+2025-11-20 23:21:35,662 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:35] "GET /preview HTTP/1.1" 200 -
+2025-11-20 23:21:41,430 [INFO] ebay_lister - ✅ Listing published successfully! ID: 197882104966
+2025-11-20 23:21:41,431 [INFO] werkzeug - 127.0.0.1 - - [20/Nov/2025 23:21:41] "POST /publish HTTP/1.1" 200 -
